@@ -12,7 +12,12 @@ const React = require("react"),
     Component = require("./lib/component-styled.jsx");
 
 let props = {
+    emptyColor: '#aaa',
+    fillColor: '#ffa500',
+    fullStars: true,
+    size: '5em',
     stars: 3.5,
+    strokeWidth: 3,
     onClick: starNr => {
         if (starNr===1) {
             props.stars = (props.stars===1) ? 0 : Math.min(1, props.stars+0.5);

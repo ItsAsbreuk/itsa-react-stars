@@ -17,7 +17,7 @@
 require('itsa-jsext');
 
 const React = require("react"),
-    PropTypes = React.PropTypes,
+    PropTypes = require("prop-types"),
     idGenerator = require('itsa-utils').idGenerator,
     MAIN_CLASS = "itsa-stars",
     DEF_SIZE = '1em', // equals its height
@@ -90,13 +90,13 @@ const Component = React.createClass({
         onMouseEnter: PropTypes.func,
 
         /**
-         * Callback for the onMousLeave event.
+         * Callback for the onMouseLeave event.
          *
-         * @property onMousLeave
+         * @property onMouseLeave
          * @type Function
          * @since 15.0.0
         */
-        onMousLeave: PropTypes.func,
+        onMouseLeave: PropTypes.func,
 
         /**
          * The size of the component, specified by its height.
@@ -144,7 +144,7 @@ const Component = React.createClass({
          *
          * @property strokeWidth
          * @type Number
-         * @default 3
+         * @default 0
          * @since 15.0.0
         */
         strokeWidth: PropTypes.number
@@ -175,7 +175,7 @@ const Component = React.createClass({
             size: DEF_SIZE,
             spaced: 45,
             strokeColor: '#000',
-            strokeWidth: 3
+            strokeWidth: 0
         };
     },
 
@@ -215,7 +215,6 @@ const Component = React.createClass({
             stars.push(
                 (<use
                     color={props.color}
-                    index={i-1}
                     key={i}
                     onClick={onClickFn}
                     transform={transform}
@@ -266,7 +265,7 @@ const Component = React.createClass({
             <div
                 className={classname}
                 onMouseEnter={props.onMouseEnter}
-                onMousLeave={props.onMousLeave}
+                onMouseLeave={props.onMouseLeave}
                 style={{height: props.size}} >
                 <svg
                     viewBox={'0 0 '+svgWidth+' '+svgHeight}
@@ -287,11 +286,16 @@ const Component = React.createClass({
                             <polygon
                                 fill={fillColor}
                                 points="11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16,0.66" />
+                            <path
+                                fill="none"
+                                d="M16,0.66 L11.547 10.918 L0,12.118 L8.822,19.867 L6.127,31.4 L16,25.325"
+                                stroke={strokeColor}
+                                strokeWidth={strokeWidth} />
                         </g>
                         <polygon
                             id={starIds['2']}
                             fill={fillColor}
-                            points="32,12.118 20.389,10.918 16.026,0.6 16,0.66 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16,0.66 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867"
+                            points="32,12.118 20.389,10.918 16.026,0.6 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867"
                             stroke={strokeColor}
                             strokeWidth={strokeWidth} />
                     </defs>

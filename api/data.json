@@ -125,9 +125,9 @@
         {
             "file": "lib/component.jsx",
             "line": 92,
-            "description": "Callback for the onMousLeave event.",
+            "description": "Callback for the onMouseLeave event.",
             "itemtype": "property",
-            "name": "onMousLeave",
+            "name": "onMouseLeave",
             "type": "Function",
             "since": "15.0.0",
             "class": "Component",
@@ -188,7 +188,7 @@
             "itemtype": "property",
             "name": "strokeWidth",
             "type": "Number",
-            "default": "3",
+            "default": "0",
             "since": "15.0.0",
             "class": "Component",
             "module": "component.jsx"
@@ -232,7 +232,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 233,
+            "line": 232,
             "description": "React render-method --> renderes the Component.",
             "itemtype": "method",
             "name": "render",
