@@ -55,7 +55,184 @@
     "classitems": [
         {
             "file": "lib/component.jsx",
-            "line": 71,
+            "line": 34,
+            "description": "The class for the component.",
+            "itemtype": "property",
+            "name": "className",
+            "type": "String",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 43,
+            "description": "Fill color for an empty star.",
+            "itemtype": "property",
+            "name": "emptyColor",
+            "default": "'#FFF'",
+            "type": "String",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 53,
+            "description": "Fill color for an filled star.",
+            "itemtype": "property",
+            "name": "fillColor",
+            "default": "'#000'",
+            "type": "String",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 63,
+            "description": "Whether to accept only full stars instead of half-full stars.\nBy default, the component supports half full stars.",
+            "itemtype": "property",
+            "name": "fullStars",
+            "default": "false",
+            "type": "Boolean",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 74,
+            "description": "Callback for the onClick event.",
+            "itemtype": "property",
+            "name": "onClick",
+            "type": "Function",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 83,
+            "description": "Callback for the onMouseEnter event.",
+            "itemtype": "property",
+            "name": "onMouseEnter",
+            "type": "Function",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 92,
+            "description": "Callback for the onMousLeave event.",
+            "itemtype": "property",
+            "name": "onMousLeave",
+            "type": "Function",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 101,
+            "description": "The size of the component, specified by its height.",
+            "itemtype": "property",
+            "name": "size",
+            "default": "'1em'",
+            "type": "String",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 111,
+            "description": "The space inbetween the stars.",
+            "itemtype": "property",
+            "name": "spaced",
+            "default": "45",
+            "type": "Number",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 121,
+            "description": "The number of stars to be filled. Should be a number between 0 and 5.\nFilling is done based upon half, or full stars: depending on this.props.fullStars.",
+            "itemtype": "property",
+            "name": "stars",
+            "type": "Number",
+            "required": 1,
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 132,
+            "description": "The stroke color of the stars.",
+            "itemtype": "property",
+            "name": "strokeColor",
+            "type": "String",
+            "default": "'#000'",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 142,
+            "description": "The stroke width of the stars.",
+            "itemtype": "property",
+            "name": "strokeWidth",
+            "type": "Number",
+            "default": "3",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 153,
+            "description": "componentWillMount initializes this.starIds",
+            "itemtype": "method",
+            "name": "componentWillMount",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 164,
+            "description": "Returns the default this.props",
+            "itemtype": "method",
+            "name": "getDefaultProps",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 182,
+            "description": "Builds 5 stars, among which some of them are filled.",
+            "itemtype": "method",
+            "name": "buildStars",
+            "params": [
+                {
+                    "name": "numberOfStars",
+                    "description": "the number of stars to be filled.",
+                    "type": "Number"
+                }
+            ],
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 233,
             "description": "React render-method --> renderes the Component.",
             "itemtype": "method",
             "name": "render",

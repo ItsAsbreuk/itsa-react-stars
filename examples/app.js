@@ -51,10 +51,22 @@
 	    Component = __webpack_require__(166);
 
 	var props = {
-	    stars: 3.5
+	    stars: 3.5,
+	    onClick: function onClick(starNr) {
+	        if (starNr === 1) {
+	            props.stars = props.stars === 1 ? 0 : Math.min(1, props.stars + 0.5);
+	        } else {
+	            props.stars = props.stars === starNr ? starNr - 0.5 : starNr;
+	        }
+	        renderFn();
+	    }
 	};
 
-	ReactDOM.render(React.createElement(Component, props), document.getElementById("component-container"));
+	var renderFn = function renderFn() {
+	    ReactDOM.render(React.createElement(Component, props), document.getElementById("component-container"));
+	};
+
+	renderFn();
 
 /***/ }),
 /* 1 */
@@ -20184,7 +20196,7 @@
 
 
 	// module
-	exports.push([module.id, ".itsa-stars {\n  display: inline-block; }\n\n.itsa-stars-star {\n  width: 1em;\n  height: 1em; }\n", ""]);
+	exports.push([module.id, ".itsa-stars {\n  display: inline-block;\n  font-size: 1em; }\n  .itsa-stars > svg {\n    width: auto;\n    height: 100%; }\n", ""]);
 
 	// exports
 
@@ -20516,43 +20528,200 @@
 	 * @since 15.0.0
 	*/
 
+	__webpack_require__(172);
+
 	var React = __webpack_require__(1),
 	    PropTypes = React.PropTypes,
+	    idGenerator = __webpack_require__(180).idGenerator,
 	    MAIN_CLASS = "itsa-stars",
-	    STAR_CLASS = MAIN_CLASS + "-star",
-	    STARS = {
-	    0: "../css/star-empty.svg", // empty star
-	    1: "../css/star-half.svg", // half star
-	    2: "../css/star.svg" // full star
+	    DEF_SIZE = '1em',
+	    // equals its height
+	SVG_HEIGHT = 32,
+	    // do not change as it matches the svg-items!
+	STAR_CLASS = MAIN_CLASS + "-star",
+	    BASE_STAR_IDS = {
+	    0: 'empty-',
+	    1: 'half-',
+	    2: 'full-'
 	};
 
 	var Component = React.createClass({
 	    displayName: "Component",
 
-
 	    propTypes: {
+	        /**
+	         * The class for the component.
+	         *
+	         * @property className
+	         * @type String
+	         * @since 15.0.0
+	        */
 	        className: PropTypes.string,
+
+	        /**
+	         * Fill color for an empty star.
+	         *
+	         * @property emptyColor
+	         * @default '#FFF'
+	         * @type String
+	         * @since 15.0.0
+	        */
+	        emptyColor: PropTypes.string,
+
+	        /**
+	         * Fill color for an filled star.
+	         *
+	         * @property fillColor
+	         * @default '#000'
+	         * @type String
+	         * @since 15.0.0
+	        */
+	        fillColor: PropTypes.string,
+
+	        /**
+	         * Whether to accept only full stars instead of half-full stars.
+	         * By default, the component supports half full stars.
+	         *
+	         * @property fullStars
+	         * @default false
+	         * @type Boolean
+	         * @since 15.0.0
+	        */
 	        fullStars: PropTypes.bool,
+
+	        /**
+	         * Callback for the onClick event.
+	         *
+	         * @property onClick
+	         * @type Function
+	         * @since 15.0.0
+	        */
 	        onClick: PropTypes.func,
+
+	        /**
+	         * Callback for the onMouseEnter event.
+	         *
+	         * @property onMouseEnter
+	         * @type Function
+	         * @since 15.0.0
+	        */
 	        onMouseEnter: PropTypes.func,
+
+	        /**
+	         * Callback for the onMousLeave event.
+	         *
+	         * @property onMousLeave
+	         * @type Function
+	         * @since 15.0.0
+	        */
 	        onMousLeave: PropTypes.func,
-	        stars: PropTypes.number.isRequired
+
+	        /**
+	         * The size of the component, specified by its height.
+	         *
+	         * @property size
+	         * @default '1em'
+	         * @type String
+	         * @since 15.0.0
+	        */
+	        size: PropTypes.string,
+
+	        /**
+	         * The space inbetween the stars.
+	         *
+	         * @property spaced
+	         * @default 45
+	         * @type Number
+	         * @since 15.0.0
+	        */
+	        spaced: PropTypes.number,
+
+	        /**
+	         * The number of stars to be filled. Should be a number between 0 and 5.
+	         * Filling is done based upon half, or full stars: depending on this.props.fullStars.
+	         *
+	         * @property stars
+	         * @type Number
+	         * @required
+	         * @since 15.0.0
+	        */
+	        stars: PropTypes.number.isRequired,
+
+	        /**
+	         * The stroke color of the stars.
+	         *
+	         * @property strokeColor
+	         * @type String
+	         * @default '#000'
+	         * @since 15.0.0
+	        */
+	        strokeColor: PropTypes.string,
+
+	        /**
+	         * The stroke width of the stars.
+	         *
+	         * @property strokeWidth
+	         * @type Number
+	         * @default 3
+	         * @since 15.0.0
+	        */
+	        strokeWidth: PropTypes.number
 	    },
 
-	    getInitialProps: function getInitialProps() {
+	    /**
+	     * componentWillMount initializes this.starIds
+	     *
+	     * @method componentWillMount
+	     * @since 15.0.0
+	     */
+	    componentWillMount: function componentWillMount() {
+	        var prepend = idGenerator('itsa-react-star');
+	        this.starIds = BASE_STAR_IDS.itsa_map(function (value) {
+	            return value + prepend;
+	        });
+	    },
+
+
+	    /**
+	     * Returns the default this.props
+	     *
+	     * @method getDefaultProps
+	     * @since 15.0.0
+	     */
+	    getDefaultProps: function getDefaultProps() {
 	        return {
-	            fullStars: false
+	            emptyColor: '#FFF',
+	            fillColor: '#000',
+	            fullStars: false,
+	            size: DEF_SIZE,
+	            spaced: 45,
+	            strokeColor: '#000',
+	            strokeWidth: 3
 	        };
 	    },
+
+
+	    /**
+	     * Builds 5 stars, among which some of them are filled.
+	     *
+	     * @method buildStars
+	     * @param numberOfStars {Number} the number of stars to be filled.
+	     * @since 15.0.0
+	     */
 	    buildStars: function buildStars(numberOfStars) {
-	        var stars = [],
-	            props = this.props,
+	        var instance = this,
+	            stars = [],
+	            props = instance.props,
+	            strokeWidth = props.strokeWidth,
+	            spaced = props.spaced,
 	            onClick = props.onClick,
-	            i = void 0,
-	            fillLevel = void 0,
-	            onClickFn = void 0;
-	        console.warn(numberOfStars);
-	        for (i = 1; i < 6; i++) {
+	            starIds = instance.starIds,
+	            s = void 0;
+	        var generateStar = function generateStar(i) {
+	            var translateX = (i - 1) * spaced + strokeWidth;
+	            var onClickFn = void 0,
+	                fillLevel = void 0,
+	                transform = void 0;
 	            if (onClick) {
 	                onClickFn = onClick.bind(null, i);
 	            }
@@ -20563,7 +20732,19 @@
 	            } else {
 	                fillLevel = 2;
 	            }
-	            stars.push(React.createElement("img", { className: STAR_CLASS, key: i, onClick: onClickFn, src: STARS[fillLevel] }));
+	            // StarComponent = STARS[fillLevel];
+	            transform = 'translate(' + translateX + ' ' + strokeWidth + ')';
+	            stars.push(React.createElement("use", {
+	                color: props.color,
+	                index: i - 1,
+	                key: i,
+	                onClick: onClickFn,
+	                transform: transform,
+	                xlinkHref: '#' + starIds[fillLevel] }));
+	        };
+
+	        for (s = 1; s < 6; s++) {
+	            generateStar(s);
 	        }
 
 	        return stars;
@@ -20580,7 +20761,15 @@
 	    render: function render() {
 	        var instance = this,
 	            props = instance.props,
-	            propsClass = props.className;
+	            emptyColor = props.emptyColor,
+	            fillColor = props.fillColor,
+	            fullStars = props.fullStars,
+	            strokeColor = props.strokeColor,
+	            strokeWidth = props.strokeWidth,
+	            propsClass = props.className,
+	            svgHeight = SVG_HEIGHT + 2 * strokeWidth,
+	            svgWidth = 5 * svgHeight + 4 * props.spaced,
+	            starIds = instance.starIds;
 	        var numberOfStars = props.stars,
 	            classname = MAIN_CLASS;
 
@@ -20595,15 +20784,2654 @@
 
 	        return React.createElement(
 	            "div",
-	            { className: classname,
+	            {
+	                className: classname,
 	                onMouseEnter: props.onMouseEnter,
-	                onMousLeave: props.onMousLeave },
-	            instance.buildStars(numberOfStars)
+	                onMousLeave: props.onMousLeave,
+	                style: { height: props.size } },
+	            React.createElement(
+	                "svg",
+	                {
+	                    viewBox: '0 0 ' + svgWidth + ' ' + svgHeight,
+	                    xmlns: "http://www.w3.org/2000/svg" },
+	                React.createElement(
+	                    "defs",
+	                    null,
+	                    React.createElement("polygon", {
+	                        id: starIds['0'],
+	                        fill: emptyColor,
+	                        points: "32,12.118 20.389,10.918 16.026,0.6 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867",
+	                        stroke: strokeColor,
+	                        strokeWidth: strokeWidth }),
+	                    React.createElement(
+	                        "g",
+	                        { id: starIds['1'] },
+	                        React.createElement("polygon", {
+	                            fill: emptyColor,
+	                            points: "32,12.118 20.389,10.918 16.026,0.6 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867",
+	                            stroke: strokeColor,
+	                            strokeWidth: strokeWidth }),
+	                        React.createElement("polygon", {
+	                            fill: fillColor,
+	                            points: "11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16,0.66" })
+	                    ),
+	                    React.createElement("polygon", {
+	                        id: starIds['2'],
+	                        fill: fillColor,
+	                        points: "32,12.118 20.389,10.918 16.026,0.6 16,0.66 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16,0.66 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867",
+	                        stroke: strokeColor,
+	                        strokeWidth: strokeWidth })
+	                ),
+	                instance.buildStars(numberOfStars)
+	            )
 	        );
 	    }
 	});
 
 	module.exports = Component;
+
+/***/ }),
+/* 172 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	__webpack_require__(173);
+	__webpack_require__(174);
+	__webpack_require__(175);
+	__webpack_require__(176);
+	__webpack_require__(177);
+	__webpack_require__(178);
+	__webpack_require__(179);
+
+/***/ }),
+/* 173 */
+/***/ (function(module, exports) {
+
+	/**
+	 *
+	 * Pollyfils for often used functionality for Functions
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module js-ext
+	 * @submodule lib/function.js
+	 * @class Function
+	 *
+	*/
+
+	"use strict";
+
+	(function (FunctionPrototype) {
+		/**
+	  * Sets the context of which the function will be execute. in the
+	  * supplied object's context, optionally adding any additional
+	  * supplied parameters to the end of the arguments the function
+	  * is executed with.
+	  *
+	  * @method itsa_rbind
+	  * @param [context] {Object} the execution context.
+	  *        The value is ignored if the bound function is constructed using the new operator.
+	  * @param [args*] {any} args* 0..n arguments to append to the end of
+	  *        arguments collection supplied to the function.
+	  * @return {function} the wrapped function.
+	  */
+		FunctionPrototype.itsa_rbind = function (context /*, args* */) {
+			var thisFunction = this,
+			    arrayArgs,
+			    slice = Array.prototype.slice;
+			context || (context = this);
+			if (arguments.length > 1) {
+				// removing `context` (first item) by slicing it out:
+				arrayArgs = slice.call(arguments, 1);
+			}
+
+			return arrayArgs ? function () {
+				// over here, `arguments` will be the "new" arguments when the final function is called!
+				return thisFunction.apply(context, slice.call(arguments, 0).concat(arrayArgs));
+			} : function () {
+				// over here, `arguments` will be the "new" arguments when the final function is called!
+				return thisFunction.apply(context, arguments);
+			};
+		};
+	})(Function.prototype);
+
+/***/ }),
+/* 174 */
+/***/ (function(module, exports) {
+
+	/**
+	 *
+	 * Pollyfils for often used functionality for Objects
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module js-ext
+	 * @submodule lib/object.js
+	 * @class Object
+	 *
+	*/
+
+	"use strict";
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var TYPES = {
+	    "undefined": true,
+	    "number": true,
+	    "boolean": true,
+	    "string": true,
+	    "[object Function]": true,
+	    "[object RegExp]": true,
+	    "[object Array]": true,
+	    "[object Date]": true,
+	    "[object Error]": true,
+	    "[object Blob]": true,
+	    "[object Promise]": true // DOES NOT WORK in all browsers
+	},
+	    FUNCTION = "function",
+
+
+	// Define configurable, writable and non-enumerable props
+	// if they don't exist.
+	defineProperty = function defineProperty(object, name, method, force) {
+	    if (!force && name in object) {
+	        return;
+	    }
+	    Object.defineProperty(object, name, {
+	        configurable: true,
+	        enumerable: false,
+	        writable: true,
+	        value: method
+	    });
+	},
+	    defineProperties = function defineProperties(object, map, force) {
+	    var names = Object.keys(map),
+	        l = names.length,
+	        i = -1,
+	        name;
+	    while (++i < l) {
+	        name = names[i];
+	        defineProperty(object, name, map[name], force);
+	    }
+	},
+	    cloneObj = function cloneObj(obj, descriptors) {
+	    var copy, i, len, value;
+
+	    // Handle Array
+	    if (obj instanceof Array) {
+	        copy = [];
+	        len = obj.length;
+	        for (i = 0; i < len; i++) {
+	            value = obj[i];
+	            copy[i] = Object.itsa_isObject(value) || Array.isArray(value) ? cloneObj(value, descriptors) : value;
+	        }
+	        return copy;
+	    }
+
+	    // Handle Date
+	    if (obj instanceof Date) {
+	        copy = new Date();
+	        copy.setTime(obj.getTime());
+	        return copy;
+	    }
+
+	    // Handle Object
+	    if (Object.itsa_isObject(obj)) {
+	        return obj.itsa_deepClone(descriptors);
+	    }
+
+	    return obj;
+	},
+	    valuesAreTheSame = function valuesAreTheSame(value1, value2) {
+	    var same, i, len;
+	    // complex values need to be inspected differently:
+	    if (Object.itsa_isObject(value1)) {
+	        same = Object.itsa_isObject(value2) ? value1.itsa_sameValue(value2) : false;
+	    } else if (Array.isArray(value1)) {
+	        if (Array.isArray(value2)) {
+	            len = value1.length;
+	            if (len === value2.length) {
+	                same = true;
+	                for (i = 0; same && i < len; i++) {
+	                    same = valuesAreTheSame(value1[i], value2[i]);
+	                }
+	            } else {
+	                same = false;
+	            }
+	        } else {
+	            same = false;
+	        }
+	    } else if (value1 instanceof Date) {
+	        same = value2 instanceof Date ? value1.getTime() === value2.getTime() : false;
+	    } else {
+	        same = value1 === value2;
+	    }
+	    return same;
+	},
+	    deepCloneObj = function deepCloneObj(source, target, descriptors, proto) {
+	    var m = target || Object.create(proto || Object.getPrototypeOf(source)),
+	        keys = Object.getOwnPropertyNames(source),
+	        l = keys.length,
+	        i = -1,
+	        key,
+	        value,
+	        propDescriptor;
+	    // loop through the members:
+	    while (++i < l) {
+	        key = keys[i];
+	        value = source[key];
+	        if (descriptors) {
+	            propDescriptor = Object.getOwnPropertyDescriptor(source, key);
+	            if (propDescriptor.writable) {
+	                Object.defineProperty(m, key, propDescriptor);
+	            }
+	            if ((Object.itsa_isObject(value) || Array.isArray(value)) && _typeof(propDescriptor.get) !== FUNCTION && _typeof(propDescriptor.set) !== FUNCTION) {
+	                m[key] = cloneObj(value, descriptors);
+	            } else {
+	                m[key] = value;
+	            }
+	        } else {
+	            m[key] = Object.itsa_isObject(value) || Array.isArray(value) ? cloneObj(value, descriptors) : value;
+	        }
+	    }
+	    return m;
+	};
+
+	/**
+	 * Pollyfils for often used functionality for objects
+	 * @class Object
+	*/
+	defineProperties(Object.prototype, {
+	    /**
+	     * Loops through all properties in the object.  Equivalent to Array.forEach.
+	     * The callback is provided with the value of the property, the name of the property
+	     * and a reference to the whole object itself.
+	     * The context to run the callback in can be overriden, otherwise it is undefined.
+	     *
+	     * @method itsa_each
+	     * @param fn {Function} Function to be executed on each item in the object.  It will receive
+	     *                      value {any} value of the property
+	     *                      key {string} name of the property
+	     *                      obj {Object} the whole of the object
+	     * @chainable
+	     */
+	    itsa_each: function itsa_each(fn, context) {
+	        var obj = this,
+	            keys = Object.keys(obj),
+	            l = keys.length,
+	            i = -1,
+	            key;
+	        while (++i < l) {
+	            key = keys[i];
+	            fn.call(context || obj, obj[key], key, obj);
+	        }
+	        return obj;
+	    },
+
+	    /**
+	     * Loops through the properties in an object until the callback function returns *truish*.
+	     * The callback is provided with the value of the property, the name of the property
+	     * and a reference to the whole object itself.
+	     * The order in which the elements are visited is not predictable.
+	     * The context to run the callback in can be overriden, otherwise it is undefined.
+	     *
+	     * @method itsa_some
+	     * @param fn {Function} Function to be executed on each item in the object.  It will receive
+	     *                      value {any} value of the property
+	     *                      key {string} name of the property
+	     *                      obj {Object} the whole of the object
+	     * @return {Boolean} true if the loop was interrupted by the callback function returning *truish*.
+	     */
+	    itsa_some: function itsa_some(fn, context) {
+	        var keys = Object.keys(this),
+	            l = keys.length,
+	            i = -1,
+	            key;
+	        while (++i < l) {
+	            key = keys[i];
+	            if (fn.call(context || this, this[key], key, this)) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    },
+
+	    /*
+	     * Loops through the properties in an object until the callback assembling a new object
+	     * with its properties set to the values returned by the callback function.
+	     * If the callback function returns `undefined` the property will not be copied to the new object.
+	     * The resulting object will have the same keys as the original, except for those where the callback
+	     * returned `undefined` which will have dissapeared.
+	     * The callback is provided with the value of the property, the name of the property
+	     * and a reference to the whole object itself.
+	     * The context to run the callback in can be overriden, otherwise it is undefined.
+	     *
+	     * @method itsa_map
+	     * @param fn {Function} Function to be executed on each item in the object.  It will receive
+	     *                      value {any} value of the property
+	     *                      key {string} name of the property
+	     *                      obj {Object} the whole of the object
+	     * @return {Object} The new object with its properties set to the values returned by the callback function.
+	     */
+	    itsa_map: function itsa_map(fn, context) {
+	        var keys = Object.keys(this),
+	            l = keys.length,
+	            i = -1,
+	            m = {},
+	            val,
+	            key;
+	        while (++i < l) {
+	            key = keys[i];
+	            val = fn.call(context, this[key], key, this);
+	            if (val !== undefined) {
+	                m[key] = val;
+	            }
+	        }
+	        return m;
+	    },
+
+	    /**
+	     * Returns the keys of the object: the enumerable properties.
+	     *
+	     * @method itsa_keys
+	     * @return {Array} Keys of the object
+	     */
+	    itsa_keys: function itsa_keys() {
+	        return Object.keys(this);
+	    },
+
+	    /**
+	     * Checks whether the given property is a key: an enumerable property.
+	     *
+	     * @method itsa_hasKey
+	     * @param property {String} the property to check for
+	     * @return {Boolean} Keys of the object
+	     */
+	    itsa_hasKey: function itsa_hasKey(property) {
+	        return this.hasOwnProperty(property) && this.propertyIsEnumerable(property);
+	    },
+
+	    /**
+	     * Returns the number of keys of the object
+	     *
+	     * @method itsa_size
+	     * @param inclNonEnumerable {Boolean} wether to include non-enumeral members
+	     * @return {Number} Number of items
+	     */
+	    itsa_size: function itsa_size(inclNonEnumerable) {
+	        return inclNonEnumerable ? Object.getOwnPropertyNames(this).length : Object.keys(this).length;
+	    },
+
+	    /**
+	     * Loops through the object collection the values of all its properties.
+	     * It is the counterpart of the [`keys`](#method_keys).
+	     *
+	     * @method itsa_values
+	     * @return {Array} values of the object
+	     */
+	    itsa_values: function itsa_values() {
+	        var keys = Object.keys(this),
+	            i = -1,
+	            len = keys.length,
+	            values = [];
+
+	        while (++i < len) {
+	            values.push(this[keys[i]]);
+	        }
+
+	        return values;
+	    },
+
+	    /**
+	     * Returns true if the object has no own members
+	     *
+	     * @method itsa_isEmpty
+	     * @return {Boolean} true if the object is empty
+	     */
+	    itsa_isEmpty: function itsa_isEmpty() {
+	        for (var key in this) {
+	            if (this.hasOwnProperty(key)) return false;
+	        }
+	        return true;
+	    },
+
+	    /**
+	     * Returns a shallow copy of the object.
+	     * It does not clone objects within the object, it does a simple, shallow clone.
+	     * Fast, mostly useful for plain hash maps.
+	     *
+	     * @method itsa_shallowClone
+	     * @param [options.descriptors=false] {Boolean} If true, the full descriptors will be set. This takes more time, but avoids any info to be lost.
+	     * @return {Object} shallow copy of the original
+	     */
+	    itsa_shallowClone: function itsa_shallowClone(descriptors) {
+	        var instance = this,
+	            m = Object.create(Object.getPrototypeOf(instance)),
+	            keys = Object.getOwnPropertyNames(instance),
+	            l = keys.length,
+	            i = -1,
+	            key,
+	            propDescriptor;
+	        while (++i < l) {
+	            key = keys[i];
+	            if (descriptors) {
+	                propDescriptor = Object.getOwnPropertyDescriptor(instance, key);
+	                if (!propDescriptor.writable) {
+	                    m[key] = instance[key];
+	                } else {
+	                    Object.defineProperty(m, key, propDescriptor);
+	                }
+	            } else {
+	                m[key] = instance[key];
+	            }
+	        }
+	        return m;
+	    },
+
+	    /**
+	     * Compares this object with the reference-object whether they have the same value.
+	     * Not by reference, but their content as simple types.
+	     *
+	     * Compares both JSON.stringify objects
+	     *
+	     * @method itsa_sameValue
+	     * @param refObj {Object} the object to compare with
+	     * @return {Boolean} whether both objects have the same value
+	     */
+	    itsa_sameValue: function itsa_sameValue(refObj) {
+	        var instance = this,
+	            keys = Object.getOwnPropertyNames(instance),
+	            l = keys.length,
+	            i = -1,
+	            same,
+	            key;
+	        same = l === refObj.itsa_size(true);
+	        // loop through the members:
+	        while (same && ++i < l) {
+	            key = keys[i];
+	            same = refObj.hasOwnProperty(key) ? valuesAreTheSame(instance[key], refObj[key]) : false;
+	        }
+	        return same;
+	    },
+
+	    /**
+	     * Returns a deep copy of the object.
+	     * Only handles members of primary types, Dates, Arrays and Objects.
+	     * Will clone all the properties, also the non-enumerable.
+	     *
+	     * @method itsa_deepClone
+	     * @param [descriptors=false] {Boolean} If true, the full descriptors will be set. This takes more time, but avoids any info to be lost.
+	     * @param [proto] {Object} Another prototype for the new object.
+	     * @return {Object} deep-copy of the original
+	     */
+	    itsa_deepClone: function itsa_deepClone(descriptors, proto) {
+	        return deepCloneObj(this, null, descriptors, proto);
+	    },
+
+	    /**
+	     * Transforms the object into an array with  'key/value' objects
+	     *
+	     * @example
+	     * {country: 'USA', Continent: 'North America'} --> [{key: 'country', value: 'USA'}, {key: 'Continent', value: 'North America'}]
+	     *
+	     * @method itsa_toArray
+	     * @param [options] {Object}
+	     * @param [options.key] {String} to overrule the default `key`-property-name
+	     * @param [options.value] {String} to overrule the default `value`-property-name
+	     * @return {Array} the transformed Array-representation of the object
+	     */
+	    itsa_toArray: function itsa_toArray(options) {
+	        var newArray = [],
+	            keyIdentifier = options && options.key || "key",
+	            valueIdentifier = options && options.value || "value";
+	        this.itsa_each(function (value, key) {
+	            var obj = {};
+	            obj[keyIdentifier] = key;
+	            obj[valueIdentifier] = value;
+	            newArray[newArray.length] = obj;
+	        });
+	        return newArray;
+	    },
+
+	    /**
+	     * Merges into this object the properties of the given object.
+	     * If the second argument is true, the properties on the source object will be overwritten
+	     * by those of the second object of the same name, otherwise, they are preserved.
+	     *
+	     * @method itsa_merge
+	     * @param obj {Object} Object with the properties to be added to the original object
+	     * @param [options] {Object}
+	     * @param [options.force=false] {Boolean|'deep'}
+	     *        true ==> the properties in `obj` will override those of the same name in the original object
+	     *        false ==> the properties in `obj` will NOT be set if the name already exists in the original object
+	     *        'deep' ==> the properties in `obj` will completely be deep-merged with the original object: both deep-proerties will endure. When
+	     *                   both `obj` and the original object have the same `simple-type`-property, the `obj` its proerty will be used
+	     * @param [options.full=false] {Boolean} If true, also any non-enumerable properties will be merged
+	     * @param [options.replace=false] {Boolean} If true, only properties that already exist on the instance will be merged (forced replaced). No need to set force as well.
+	     * @param [options.descriptors=false] {Boolean} If true, the full descriptors will be set. This takes more time, but avoids any info to be lost.
+	     * @chainable
+	     */
+	    itsa_merge: function itsa_merge(obj, options) {
+	        var instance = this,
+	            i = -1,
+	            deepForce,
+	            keys,
+	            l,
+	            key,
+	            force,
+	            replace,
+	            descriptors,
+	            propDescriptor;
+	        if (!Object.itsa_isObject(obj)) {
+	            return instance;
+	        }
+	        options || (options = {});
+	        keys = options.full ? Object.getOwnPropertyNames(obj) : Object.keys(obj);
+	        l = keys.length;
+	        force = options.force;
+	        deepForce = force === "deep";
+	        replace = options.replace;
+	        descriptors = options.descriptors;
+	        // we cannot use obj.each --> obj might be an object defined through Object.create(null) and missing Object.prototype!
+	        while (++i < l) {
+	            key = keys[i];
+	            if (force && !replace || !replace && !(key in instance) || replace && key in instance) {
+	                if (deepForce && Object.itsa_isObject(instance[key]) && Object.itsa_isObject(obj[key])) {
+	                    instance[key].itsa_merge(obj[key], options);
+	                } else {
+	                    if (descriptors) {
+	                        propDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+	                        if (!propDescriptor.writable) {
+	                            instance[key] = obj[key];
+	                        } else {
+	                            Object.defineProperty(instance, key, propDescriptor);
+	                        }
+	                    } else {
+	                        instance[key] = obj[key];
+	                    }
+	                }
+	            }
+	        }
+	        return instance;
+	    },
+
+	    /**
+	     * Sets the properties of `obj` to the instance. This will redefine the object, while remaining the instance.
+	     * This way, external references to the object-instance remain valid.
+	     *
+	     * @method itsa_defineData
+	     * @param obj {Object} the Object that holds the new properties.
+	     * @param [clone=false] {Boolean} whether the properties should be cloned
+	     * @chainable
+	     */
+	    itsa_defineData: function itsa_defineData(obj, clone) {
+	        var thisObj = this;
+	        thisObj.itsa_emptyObject();
+	        if (clone) {
+	            deepCloneObj(obj, thisObj, true);
+	        } else {
+	            thisObj.itsa_merge(obj);
+	        }
+	        return thisObj;
+	    },
+
+	    /**
+	     * Empties the Object by deleting all its own properties (also non-enumerable).
+	     *
+	     * @method itsa_emptyObject
+	     * @chainable
+	     */
+	    itsa_emptyObject: function itsa_emptyObject() {
+	        var thisObj = this,
+	            props = Object.getOwnPropertyNames(thisObj),
+	            len = props.length,
+	            i;
+	        for (i = 0; i < len; i++) {
+	            delete thisObj[props[i]];
+	        }
+	        return thisObj;
+	    }
+
+	});
+
+	/**
+	* Returns true if the item is an object, but no Array, Function, RegExp, Date or Error object
+	*
+	* @method itsa_isObject
+	* @static
+	* @return {Boolean} true if the object is empty
+	*/
+	Object.itsa_isObject = function (item) {
+	    // cautious: some browsers detect Promises as [object Object] --> we always need to check instance of :(
+	    return !!(!TYPES[typeof item === "undefined" ? "undefined" : _typeof(item)] && !TYPES[{}.toString.call(item)] && item && (!Promise || !(item instanceof Promise)));
+	};
+
+	/**
+	 * Returns a new object resulting of merging the properties of the given objects.
+	 * The copying is shallow, complex properties will reference the very same object.
+	 * Properties in later objects do **not overwrite** properties of the same name in earlier objects.
+	 * If any of the objects is missing, it will be skiped.
+	 *
+	 * @example
+	 *
+	 *  var foo = function (config) {
+	 *       config = Object.itsa_merge(config, defaultConfig);
+	 *  }
+	 *
+	 * @method itsa_merge
+	 * @static
+	 * @param obj* {Object} Objects whose properties are to be merged
+	 * @return {Object} new object with the properties merged in.
+	 */
+	Object.itsa_merge = function () {
+	    var m = {};
+	    Array.prototype.forEach.call(arguments, function (obj) {
+	        if (obj) m.itsa_merge(obj);
+	    });
+	    return m;
+	};
+
+	/**
+	 * Returns a new object with the prototype specified by `proto`.
+	 *
+	 *
+	 * @method itsa_newProto
+	 * @static
+	 * @param obj {Object} source Object
+	 * @param proto {Object} Object that should serve as prototype
+	 * @param [clone=false] {Boolean} whether the sourceobject should be deep-cloned. When false, the properties will be merged.
+	 * @return {Object} new object with the prototype specified.
+	 */
+	Object.itsa_newProto = function (obj, proto, clone) {
+	    return clone ? obj.itsa_deepClone(true, proto) : Object.create(proto).itsa_merge(obj, { force: true });
+	};
+
+	/**
+	 * Creates a protected property on the object.
+	 *
+	 * @method itsa_protectedProp
+	 * @static
+	 */
+	Object.itsa_protectedProp = function (obj, property, value) {
+	    Object.defineProperty(obj, property, {
+	        configurable: false,
+	        enumerable: false,
+	        writable: false,
+	        value: value
+	    });
+	};
+
+/***/ }),
+/* 175 */
+/***/ (function(module, exports) {
+
+	/**
+	 *
+	 * Pollyfils for often used functionality for Strings
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module js-ext
+	 * @submodule lib/string.js
+	 * @class String
+	 *
+	 */
+
+	"use strict";
+
+	(function (StringPrototype) {
+	    var SUBREGEX = /\{\s*([^|}]+?)\s*(?:\|([^}]*))?\s*\}/g,
+	        DATEPATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/,
+	        WHITESPACE_CLASS = "[\\s\uFEFF\xA0]+",
+	        TRIM_LEFT_REGEX = new RegExp("^" + WHITESPACE_CLASS),
+	        TRIM_RIGHT_REGEX = new RegExp(WHITESPACE_CLASS + "$"),
+	        TRIMREGEX = new RegExp(TRIM_LEFT_REGEX.source + "|" + TRIM_RIGHT_REGEX.source, "g"),
+	        PATTERN_EMAIL = new RegExp("^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$"),
+	        PATTERN_URLEND = "([a-zA-Z0-9]+\\.)*(?:[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}(/[\\w-]+)*$",
+	        PATTERN_URLHTTP = new RegExp("^http://" + PATTERN_URLEND),
+	        PATTERN_URLHTTPS = new RegExp("^https://" + PATTERN_URLEND),
+	        PATTERN_URL = new RegExp("^(https?://)?" + PATTERN_URLEND),
+	        PATTERN_INTEGER = /^(([-]?[1-9][0-9]*)|0)$/,
+	        PATTERN_FLOAT_START = "^([-]?(([1-9][0-9]*)|0))?(\\",
+	        PATTERN_FLOAT_END = "[0-9]+)?$",
+	        PATTERN_FLOAT_COMMA = new RegExp(PATTERN_FLOAT_START + "," + PATTERN_FLOAT_END),
+	        PATTERN_FLOAT_DOT = new RegExp(PATTERN_FLOAT_START + "." + PATTERN_FLOAT_END),
+	        PATTERN_HEX_COLOR_ALPHA = /^#?[0-9A-F]{4}([0-9A-F]{4})?$/,
+	        PATTERN_HEX_COLOR = /^#?[0-9A-F]{3}([0-9A-F]{3})?$/;
+
+	    /**
+	     * Checks whether the substring is part if this String.
+	     * Alias for (String.indexOf(substring) > -1)
+	     *
+	     * @method itsa_contains
+	     * @param substring {String} the substring to test for
+	     * @param [caseInsensitive=false] {Boolean} whether to ignore case-sensivity
+	     * @return {Boolean} whether the substring is found
+	     */
+	    StringPrototype.itsa_contains = function (substring, caseInsensitive) {
+	        return caseInsensitive ? this.toLowerCase().indexOf(substring.toLowerCase()) > -1 : this.indexOf(substring) > -1;
+	    };
+
+	    /**
+	     * Checks if the string ends with the value specified by `test`
+	     *
+	     * @method itsa_endsWith
+	     * @param test {String} the string to test for
+	     * @param [caseInsensitive=false] {Boolean} whether to ignore case-sensivity
+	     * @return {Boolean} whether the string ends with `test`
+	     */
+	    // NOTE: ES6 native `endsWith` lacks the second argument
+	    StringPrototype.itsa_endsWith = function (test, caseInsensitive) {
+	        return new RegExp(test + "$", caseInsensitive ? "i" : "").test(this);
+	    };
+
+	    /**
+	     * Checks if the string can be parsed into a number when using `parseInt()`
+	     *
+	     * @method itsa_isParsable
+	     * @return {Boolean} whether the string is parsable
+	     */
+	    StringPrototype.itsa_isParsable = function () {
+	        // strange enough, NaN doen't let compare itself, so we need a strange test:
+	        // parseInt(value, 10)===parseInt(value, 10)
+	        // which returns `true` for a parsable value, otherwise false
+	        return parseInt(this) === parseInt(this);
+	    };
+
+	    /**
+	     * Uppercases the first character
+	     *
+	     * @method itsa_sentence
+	     * @return {String} The same string with its first character uppercased
+	     */
+	    StringPrototype.itsa_sentence = function () {
+	        return this.length > 0 ? this[0].toUpperCase() + this.substr(1) : "";
+	    };
+
+	    /**
+	     * Checks if the string starts with the value specified by `test`
+	     *
+	     * @method itsa_startsWith
+	     * @param test {String} the string to test for
+	     * @param [caseInsensitive=false] {Boolean} whether to ignore case-sensivity
+	     * @return {Boolean} whether the string starts with `test`
+	     */
+	    // NOTE: ES6 native `startsWith` lacks the second argument
+	    StringPrototype.itsa_startsWith = function (test, caseInsensitive) {
+	        return new RegExp("^" + test, caseInsensitive ? "i" : "").test(this);
+	    };
+
+	    /**
+	     * Performs `{placeholder}` substitution on a string. The object passed
+	     * provides values to replace the `{placeholder}`s.
+	     * `{placeholder}` token names must match property names of the object.
+	     *
+	     * `{placeholder}` tokens that are undefined on the object map will be removed.
+	     *
+	     * @example
+	     * var greeting = '{message} {who}!';
+	     * greeting.itsa_substitute({message: 'Hello'}); // results into 'Hello !'
+	     *
+	     * @method itsa_substitute
+	     * @param obj {Object} Object containing replacement values.
+	     * @param [retainUndefined=false] {Boolean} whether to keep placeholders that are undefined in `obj`
+	     * @return {String} the substitute result.
+	     */
+	    StringPrototype.itsa_substitute = function (obj, retainUndefined) {
+	        return this.itsa_replace(SUBREGEX, function (match, key) {
+	            return obj[key] === undefined ? retainUndefined ? "{" + key + "}" : "" : obj[key];
+	        });
+	    };
+
+	    /**
+	     * Returns a ISO-8601 Date-object build by the String's value.
+	     * If the String-value doesn't match ISO-8601, `null` will be returned.
+	     *
+	     * ISO-8601 Date's are generated by JSON.stringify(), so it's very handy to be able to reconvert them.
+	     *
+	     * @example
+	     * var birthday = '2010-02-10T14:45:30.000Z';
+	     * birthday.itsa_toDate(); // --> Wed Feb 10 2010 15:45:30 GMT+0100 (CET)
+	     *
+	     * @method itsa_toDate
+	     * @return {Date|null} the Date represented by the String's value or null when invalid
+	     */
+	    StringPrototype.itsa_toDate = function () {
+	        return DATEPATTERN.test(this) ? new Date(this) : null;
+	    };
+
+	    /**
+	     * Generated the string without any white-spaces at the start or end.
+	     *
+	     * @method itsa_trim
+	     * @return {String} new String without leading and trailing white-spaces
+	     */
+	    StringPrototype.itsa_trim = function () {
+	        return this.itsa_replace(TRIMREGEX, "");
+	    };
+
+	    /**
+	     * Generated the string without any white-spaces at the beginning.
+	     *
+	     * @method itsa_trimLeft
+	     * @return {String} new String without leading white-spaces
+	     */
+	    StringPrototype.itsa_trimLeft = function () {
+	        return this.itsa_replace(TRIM_LEFT_REGEX, "");
+	    };
+
+	    /**
+	     * Generated the string without any white-spaces at the end.
+	     *
+	     * @method itsa_trimRight
+	     * @return {String} new String without trailing white-spaces
+	     */
+	    StringPrototype.itsa_trimRight = function () {
+	        return this.itsa_replace(TRIM_RIGHT_REGEX, "");
+	    };
+
+	    /**
+	     * Replaces search-characters by a replacement. Replaces only the firts occurence.
+	     * Does not alter the String itself, but returns a new String with the replacement.
+	     *
+	     * @method itsa_replace
+	     * @param search {String} the character(s) to be replaced
+	     * @param replacement {String} the replacement
+	     * @param [caseInsensitive=false] {Boolean} whether to do search case-insensitive
+	     * @return {String} new String with the replacement
+	     */
+	    StringPrototype.itsa_replace = function (search, replacement, caseInsensitive) {
+	        return StringPrototype.replace.call(this, caseInsensitive ? new RegExp(search, "i") : search, replacement);
+	    };
+
+	    /**
+	     * Replaces search-characters by a replacement. Replaces all occurences.
+	     * Does not alter the String itself, but returns a new String with the replacements.
+	     *
+	     * @method itsa_replaceAll
+	     * @param search {String} the character(s) to be replaced
+	     * @param replacement {String} the replacement
+	     * @param [caseInsensitive=false] {Boolean} whether to do search case-insensitive
+	     * @return {String} new String with the replacements
+	     */
+	    StringPrototype.itsa_replaceAll = function (search, replacement, caseInsensitive) {
+	        return StringPrototype.replace.call(this, new RegExp(search, "g" + (caseInsensitive ? "i" : "")), replacement);
+	    };
+
+	    /**
+	     * Validates if the String's value represents a valid emailaddress.
+	     *
+	     * @method itsa_isValidEmail
+	     * @return {Boolean} whether the String's value is a valid emailaddress.
+	     */
+	    StringPrototype.itsa_isValidEmail = function () {
+	        return PATTERN_EMAIL.test(this);
+	    };
+
+	    /**
+	     * Validates if the String's value represents a valid floated number.
+	     *
+	     * @method itsa_isValidFloat
+	     * @param [comma] {Boolean} whether to use a comma as decimal separator instead of a dot
+	     * @return {Boolean} whether the String's value is a valid floated number.
+	     */
+	    StringPrototype.itsa_isValidFloat = function (comma) {
+	        return comma ? PATTERN_FLOAT_COMMA.test(this) : PATTERN_FLOAT_DOT.test(this);
+	    };
+
+	    /**
+	     * Validates if the String's value represents a hexadecimal color.
+	     *
+	     * @method itsa_isValidHexaColor
+	     * @param [alpha=false] {Boolean} whether to accept alpha transparancy
+	     * @return {Boolean} whether the String's value is a valid hexadecimal color.
+	     */
+	    StringPrototype.itsa_isValidHexaColor = function (alpha) {
+	        return alpha ? PATTERN_HEX_COLOR_ALPHA.test(this) : PATTERN_HEX_COLOR.test(this);
+	    };
+
+	    /**
+	     * Validates if the String's value represents a valid integer number.
+	     *
+	     * @method itsa_isValidNumber
+	     * @return {Boolean} whether the String's value is a valid integer number.
+	     */
+	    StringPrototype.itsa_isValidNumber = function () {
+	        return PATTERN_INTEGER.test(this);
+	    };
+
+	    /**
+	     * Validates if the String's value represents a valid boolean.
+	     *
+	     * @method itsa_isValidBoolean
+	     * @return {Boolean} whether the String's value is a valid boolean.
+	     */
+	    StringPrototype.itsa_isValidBoolean = function () {
+	        var length = this.length,
+	            check;
+	        if (length < 4 || length > 5) {
+	            return false;
+	        }
+	        check = this.toUpperCase();
+	        return check === "TRUE" || check === "FALSE";
+	    };
+
+	    /**
+	     * Validates if the String's value represents a valid Date.
+	     *
+	     * @method itsa_isValidDate
+	     * @return {Boolean} whether the String's value is a valid Date object.
+	     */
+	    StringPrototype.itsa_isValidDate = function () {
+	        return DATEPATTERN.test(this);
+	    };
+
+	    /**
+	     * Validates if the String's value represents a valid URL.
+	     *
+	     * @method itsa_isValidURL
+	     * @param [options] {Object}
+	     * @param [options.http] {Boolean} to force matching starting with `http://`
+	     * @param [options.https] {Boolean} to force matching starting with `https://`
+	     * @return {Boolean} whether the String's value is a valid URL.
+	     */
+	    StringPrototype.itsa_isValidURL = function (options) {
+	        var instance = this;
+	        options || (options = {});
+	        if (options.http && options.https) {
+	            return false;
+	        }
+	        return options.http ? PATTERN_URLHTTP.test(instance) : options.https ? PATTERN_URLHTTPS.test(instance) : PATTERN_URL.test(instance);
+	    };
+	})(String.prototype);
+
+/***/ }),
+/* 176 */
+/***/ (function(module, exports) {
+
+	/**
+	 *
+	 * Pollyfils for often used functionality for Arrays
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module js-ext
+	 * @submodule lib/array.js
+	 * @class Array
+	 *
+	 */
+
+	"use strict";
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var TYPES = {
+	    "undefined": true,
+	    "number": true,
+	    "boolean": true,
+	    "string": true,
+	    "[object Function]": true,
+	    "[object RegExp]": true,
+	    "[object Array]": true,
+	    "[object Date]": true,
+	    "[object Error]": true,
+	    "[object Promise]": true
+	},
+	    FUNCTION = "function",
+	    isObject,
+	    objSameValue,
+	    _cloneObj,
+	    deepCloneObj,
+	    valuesAreTheSame;
+
+	isObject = function isObject(item) {
+	    return !!(!TYPES[typeof item === "undefined" ? "undefined" : _typeof(item)] && !TYPES[{}.toString.call(item)] && item);
+	};
+
+	objSameValue = function objSameValue(obj1, obj2) {
+	    var keys = Object.getOwnPropertyNames(obj1),
+	        keysObj2 = Object.getOwnPropertyNames(obj2),
+	        l = keys.length,
+	        i = -1,
+	        same,
+	        key;
+	    same = l === keysObj2.length;
+	    // loop through the members:
+	    while (same && ++i < l) {
+	        key = keys[i];
+	        same = obj2.hasOwnProperty(key) ? valuesAreTheSame(obj1[key], obj2[key]) : false;
+	    }
+	    return same;
+	};
+
+	deepCloneObj = function deepCloneObj(obj, descriptors) {
+	    var m = Object.create(Object.getPrototypeOf(obj)),
+	        keys = Object.getOwnPropertyNames(obj),
+	        l = keys.length,
+	        i = -1,
+	        key,
+	        value,
+	        propDescriptor;
+	    // loop through the members:
+	    while (++i < l) {
+	        key = keys[i];
+	        value = obj[key];
+	        if (descriptors) {
+	            propDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+	            if (propDescriptor.writable) {
+	                Object.defineProperty(m, key, propDescriptor);
+	            }
+	            if ((isObject(value) || Array.isArray(value)) && _typeof(propDescriptor.get) !== FUNCTION && _typeof(propDescriptor.set) !== FUNCTION) {
+	                m[key] = _cloneObj(value, descriptors);
+	            } else {
+	                m[key] = value;
+	            }
+	        } else {
+	            m[key] = isObject(value) || Array.isArray(value) ? _cloneObj(value, descriptors) : value;
+	        }
+	    }
+	    return m;
+	};
+
+	_cloneObj = function cloneObj(obj, descriptors, target) {
+	    var copy, i, len, value;
+
+	    // Handle Array
+	    if (obj instanceof Array) {
+	        copy = target || [];
+	        len = obj.length;
+	        for (i = 0; i < len; i++) {
+	            value = obj[i];
+	            copy[i] = isObject(value) || Array.isArray(value) ? _cloneObj(value, descriptors) : value;
+	        }
+	        return copy;
+	    }
+
+	    // Handle Date
+	    if (obj instanceof Date) {
+	        copy = new Date();
+	        copy.setTime(obj.getTime());
+	        return copy;
+	    }
+
+	    // Handle Object
+	    if (isObject(obj)) {
+	        return deepCloneObj(obj, descriptors);
+	    }
+
+	    return obj;
+	};
+
+	valuesAreTheSame = function valuesAreTheSame(value1, value2) {
+	    var same;
+	    // complex values need to be inspected differently:
+	    if (isObject(value1)) {
+	        same = isObject(value2) ? objSameValue(value1, value2) : false;
+	    } else if (Array.isArray(value1)) {
+	        same = Array.isArray(value2) ? value1.itsa_sameValue(value2) : false;
+	    } else if (value1 instanceof Date) {
+	        same = value2 instanceof Date ? value1.getTime() === value2.getTime() : false;
+	    } else {
+	        same = value1 === value2;
+	    }
+	    return same;
+	};
+
+	(function (ArrayPrototype) {
+
+	    /**
+	     * Checks whether an item is inside the Array.
+	     * Alias for (array.indexOf(item) > -1)
+	     *
+	     * @method itsa_contains
+	     * @param item {Any} the item to seek
+	     * @return {Boolean} whether the item is part of the Array
+	     */
+	    ArrayPrototype.itsa_contains = function (item) {
+	        return this.indexOf(item) > -1;
+	    };
+
+	    /**
+	     * Removes an item from the array
+	     *
+	     * @method itsa_remove
+	     * @param item {any|Array} the item (or an hash of items) to be removed
+	     * @param [arrayItem=false] {Boolean} whether `item` is an arrayItem that should be treated as a single item to be removed
+	     *        You need to set `arrayItem=true` in those cases. Otherwise, all single items from `item` are removed separately.
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_remove = function (item, arrayItem) {
+	        var instance = this,
+	            removeItem = function removeItem(oneItem) {
+	            var index = instance.indexOf(oneItem);
+	            index > -1 && instance.splice(index, 1);
+	        };
+	        if (!arrayItem && Array.isArray(item)) {
+	            item.forEach(removeItem);
+	        } else {
+	            removeItem(item);
+	        }
+	        return instance;
+	    };
+
+	    /**
+	     * Replaces an item in the array. If the previous item is not part of the array, the new item is appended.
+	     *
+	     * @method itsa_replace
+	     * @param prevItem {any} the item to be replaced
+	     * @param newItem {any} the item to be added
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_replace = function (prevItem, newItem) {
+	        var instance = this,
+	            index = instance.indexOf(prevItem);
+	        index !== -1 ? instance.splice(index, 1, newItem) : instance.push(newItem);
+	        return instance;
+	    };
+
+	    /**
+	     * Inserts an item in the array at the specified position. If index is larger than array.length, the new item(s) will be appended.
+	     * If the item already exists, it will be moved to its new position, unless `duplicate` is set true
+	     *
+	     * @method itsa_insertAt
+	     * @param item {any|Array} the item to be replaced, may be an Array of items
+	     * @param index {Number} the position where to add the item(s). When larger than Array.length, the item(s) will be appended.
+	     * @param [duplicate=false] {boolean} if an item should be duplicated when already in the array
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_insertAt = function (item, index, duplicate) {
+	        var instance = this,
+	            prevIndex;
+	        if (!duplicate) {
+	            prevIndex = instance.indexOf(item);
+	            if (prevIndex === index) {
+	                return instance;
+	            }
+	            prevIndex > -1 && instance.splice(prevIndex, 1);
+	        }
+	        instance.splice(index, 0, item);
+	        return instance;
+	    };
+
+	    /**
+	     * Shuffles the items in the Array randomly
+	     *
+	     * @method itsa_shuffle
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_shuffle = function () {
+	        var instance = this,
+	            counter = instance.length,
+	            temp,
+	            index;
+	        // While there are elements in the instance
+	        while (counter > 0) {
+	            // Pick a random index
+	            index = Math.floor(Math.random() * counter);
+
+	            // Decrease counter by 1
+	            counter--;
+
+	            // And swap the last element with it
+	            temp = instance[counter];
+	            instance[counter] = instance[index];
+	            instance[index] = temp;
+	        }
+	        return instance;
+	    };
+
+	    /**
+	     * Returns a deep copy of the Array.
+	     * Only handles members of primary types, Dates, Arrays and Objects.
+	     *
+	     * @method itsa_deepClone
+	     * @param [descriptors=false] {Boolean} whether to use the descriptors when cloning
+	     * @return {Array} deep-copy of the original
+	     */
+	    ArrayPrototype.itsa_deepClone = function (descriptors) {
+	        return _cloneObj(this, descriptors);
+	    };
+
+	    /**
+	     * Compares this object with the reference-object whether they have the same value.
+	     * Not by reference, but their content as simple types.
+	     *
+	     * Compares both JSON.stringify objects
+	     *
+	     * @method itsa_sameValue
+	     * @param refObj {Object} the object to compare with
+	     * @return {Boolean} whether both objects have the same value
+	     */
+	    ArrayPrototype.itsa_sameValue = function (refArray) {
+	        var instance = this,
+	            len = instance.length,
+	            i = -1,
+	            same;
+	        same = len === refArray.length;
+	        // loop through the members:
+	        while (same && ++i < len) {
+	            same = valuesAreTheSame(instance[i], refArray[i]);
+	        }
+	        return same;
+	    };
+
+	    /**
+	     * Sets the items of `array` to the instance. This will refill the array, while remaining the instance.
+	     * This way, external references to the array-instance remain valid.
+	     *
+	     * @method itsa_defineData
+	     * @param array {Array} the Array that holds the new items.
+	     * @param [clone=false] {Boolean} whether the items should be cloned
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_defineData = function (array, clone) {
+	        var thisArray = this,
+	            len,
+	            i;
+	        thisArray.itsa_makeEmpty();
+	        if (clone) {
+	            _cloneObj(array, true, thisArray);
+	        } else {
+	            len = array.length;
+	            for (i = 0; i < len; i++) {
+	                thisArray[i] = array[i];
+	            }
+	        }
+	        return thisArray;
+	    },
+
+	    /**
+	     * Concats `array` into this array (appended by default).
+	     *
+	     * @method itsa_concat
+	     * @param array {Array} the Array to be merged
+	     * @param [prepend=false] {Boolean} whether the items prepended
+	     * @param [clone=false] {Boolean} whether the items should be cloned
+	     * @param [descriptors=false] {Boolean} whether to use the descriptors when cloning
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_concat = function (array, prepend, clone, descriptors) {
+	        var instance = this,
+	            mergeArray = clone ? array.itsa_deepClone(descriptors) : array;
+	        if (prepend) {
+	            mergeArray.reduceRight(function (coll, item) {
+	                coll.unshift(item);
+	                return coll;
+	            }, instance);
+	        } else {
+	            mergeArray.reduce(function (coll, item) {
+	                coll[coll.length] = item;
+	                return coll;
+	            }, instance);
+	        }
+	        return instance;
+	    };
+
+	    /**
+	     * Empties the Array by setting its length to zero.
+	     *
+	     * @method itsa_makeEmpty
+	     * @chainable
+	     */
+	    ArrayPrototype.itsa_makeEmpty = function () {
+	        this.length = 0;
+	        return this;
+	    };
+	})(Array.prototype);
+
+/***/ }),
+/* 177 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/**
+	 *
+	 * Pollyfils for often used functionality for Arrays
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module js-ext
+	 * @submodule lib/json.js
+	 * @class JSON
+	 *
+	 */
+
+	"use strict";
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	__webpack_require__(174);
+	__webpack_require__(176);
+	__webpack_require__(175);
+
+	var STRING = "string";
+
+	var REVIVER = function REVIVER(key, value) {
+	    return typeof value === "string" && value.itsa_toDate() || value;
+	},
+	    px = /^\$(?:\[(?:\d+|\"(?:[^\\\"\u0000-\u001f]|\\([\\\"\/bfnrt]|u[0-9a-zA-Z]{4}))*\")\])*$/,
+	    _objectStringToDates,
+	    _arrayStringToDates,
+	    decycle,
+	    retrocycle;
+
+	_objectStringToDates = function objectStringToDates(obj) {
+	    var date;
+	    obj.itsa_each(function (value, key) {
+	        if ((typeof value === "undefined" ? "undefined" : _typeof(value)) === STRING) {
+	            (date = value.itsa_toDate()) && (obj[key] = date);
+	        } else if (Object.itsa_isObject(value)) {
+	            _objectStringToDates(value);
+	        } else if (Array.isArray(value)) {
+	            _arrayStringToDates(value);
+	        }
+	    });
+	};
+
+	_arrayStringToDates = function arrayStringToDates(array) {
+	    var i, len, arrayItem, date;
+	    len = array.length;
+	    for (i = 0; i < len; i++) {
+	        arrayItem = array[i];
+	        if ((typeof arrayItem === "undefined" ? "undefined" : _typeof(arrayItem)) === STRING) {
+	            (date = arrayItem.itsa_toDate()) && (array[i] = date);
+	        } else if (Object.itsa_isObject(arrayItem)) {
+	            _objectStringToDates(arrayItem);
+	        } else if (Array.isArray(arrayItem)) {
+	            _arrayStringToDates(arrayItem);
+	        }
+	    }
+	};
+
+	decycle = function decycle(object, replacer) {
+	    var objects = []; // Keep a reference to each unique object or array
+	    var paths = []; // Keep the path to each unique object or array
+
+	    return function derez(value, path) {
+	        // The derez function recurses through the object, producing the deep copy.
+	        var i, nu, isArray;
+
+	        // If a replacer function was provided, then call it to get a replacement value.
+	        if (replacer !== undefined) {
+	            value = replacer(value);
+	        }
+	        isArray = Array.isArray(value);
+	        if (isArray || Object.itsa_isObject(value)) {
+	            // If the value is an object or array, look to see if we have already
+	            // encountered it. If so, return a {"$ref":PATH} object. This is a hard
+	            // linear search that will get slower as the number of unique objects grows.
+	            // Someday, this should be replaced with an ES6 WeakMap.
+	            i = objects.indexOf(value);
+	            if (i >= 0) {
+	                return { $ref: paths[i] };
+	            }
+	            // Otherwise, accumulate the unique value and its path.
+	            objects.push(value);
+	            paths.push(path);
+	            // If it is an array, replicate the array.
+	            if (isArray) {
+	                nu = [];
+	                value.forEach(function (element, i) {
+	                    nu[i] = derez(element, path + "[" + i + "]");
+	                });
+	            } else {
+	                // If it is an object, replicate the object.
+	                nu = {};
+	                value.itsa_each(function (val, key) {
+	                    nu[key] = derez(val, path + "[" + JSON.stringify(key) + "]");
+	                });
+	            }
+	            return nu;
+	        }
+	        return value;
+	    }(object, "$");
+	};
+
+	retrocycle = function retrocycle($) {
+	    (function rez(value) {
+	        // The rez function walks recursively through the object looking for $ref
+	        // properties. When it finds one that has a value that is a path, then it
+	        // replaces the $ref object with a reference to the value that is found by
+	        // the path.
+	        if (value && (typeof value === "undefined" ? "undefined" : _typeof(value)) === "object") {
+	            if (Array.isArray(value)) {
+	                value.forEach(function (element, i) {
+	                    var path;
+	                    if ((typeof element === "undefined" ? "undefined" : _typeof(element)) === "object" && element !== null) {
+	                        path = element.$ref;
+	                        if (typeof path === "string" && px.test(path)) {
+	                            value[i] = eval(path);
+	                        } else {
+	                            rez(element);
+	                        }
+	                    }
+	                });
+	            } else {
+	                value.itsa_each(function (val, key) {
+	                    var path;
+	                    if ((typeof val === "undefined" ? "undefined" : _typeof(val)) === "object" && val !== null) {
+	                        path = val.$ref;
+	                        if (typeof path === "string" && px.test(path)) {
+	                            value[key] = eval(path);
+	                        } else {
+	                            rez(val);
+	                        }
+	                    }
+	                });
+	            }
+	        }
+	    })($);
+	    return $;
+	};
+
+	/**
+	 * Parses a stringified object and creates true `Date` properties.
+	 *
+	 * @method itsa_parseWithDate
+	 * @param stringifiedObj {Number} lower-edgde
+	 * @return {Number|undefined} the value, forced to be inbetween the edges. Returns `undefined` if `max` is lower than `min`.
+	 */
+	JSON.itsa_parseWithDate = function (stringifiedObj) {
+	    return this.parse(stringifiedObj, REVIVER);
+	};
+
+	/**
+	* Transforms `String`-properties into true Date-objects in case they match the Date-syntax.
+	* To be used whenever you have parsed a JSON.stringified object without a Date-reviver.
+	*
+	* @method itsa_stringToDates
+	* @param item {Object|Array} the JSON-parsed object which the date-string fields should be transformed into Dates.
+	* @param clone {Boolean=false} whether to clone `item` and leave it unspoiled. Cloning means a performancehit,
+	* better leave it `false`, which will lead into changing `item` which in fact will equal the returnvalue.
+	* @static
+	* @return {Object|Array} the transformed item
+	*/
+	JSON.itsa_stringToDates = function (item, clone) {
+	    var newItem = clone ? item.itsa_deepClone() : item;
+	    if (Object.itsa_isObject(newItem)) {
+	        _objectStringToDates(newItem);
+	    } else if (Array.isArray(newItem)) {
+	        _arrayStringToDates(newItem);
+	    }
+	    return newItem;
+	};
+
+	/**
+	* Inspired by https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
+	*
+	* JSON-stringifies an object BUT can handle circular-references.
+	* This is done by replacing duplicate references with an object of the form:
+	*
+	* {"$ref": PATH}
+	*
+	* where the PATH is a JSONPath string that locates the first occurance.
+	*
+	* @example
+	*     var a = [];
+	*     a[0] = a;
+	*     JSON.itsa_stringifyNoCycle(a);
+
+	* produces the string: '[{"$ref":"$"}]'
+	*
+	* @method itsa_stringifyNoCycle
+	* @param value {Any} The value to convert to a JSON string.
+	* @param [replacer] {Function} A function that alters the behavior of the stringification process,
+	*                              or an array of String and Number objects that serve as a whitelist for selecting the properties
+	*                              of the value object to be included in the JSON string. If this value is null or not provided,
+	*                              all properties of the object are included in the resulting JSON string.
+	* @param [space] {String|Number} Is used to insert white space into the output JSON string for readability purposes.
+	*                                If this is a Number, it indicates the number of space characters to use as white space;
+	*                                this number is capped at 10 if it's larger than that. Values less than 1 indicate that no space should be used.
+	*                                If this is a String, the string (or the first 10 characters of the string, if it's longer than that) is used
+	*                                as white space. If this parameter is not provided (or is null), no white space is used* @static
+	* @return {String} the stringified object
+	*/
+	JSON.itsa_stringifyNoCycle = function (value, replacer, space) {
+	    return JSON.stringify(decycle(value, replacer), null, space);
+	};
+
+	/**
+	* Inspired by https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
+	*
+	* Restore an object that was reduced by `JSON.itsa_stringifyNoCycle`. Members whose values are
+	* objects of the form
+	*      {$ref: PATH}
+	* are replaced with references to the value found by the PATH. This will restore cycles. The object will be mutated.
+	*
+	* @example
+	*     var s = '[{"$ref":"$"}]';
+	*     itsa_parseNoCycle(s);
+	*
+	* @method itsa_parseNoCycle
+	* @param value {Any} The string to parse as JSON. See the JSON object for a description of JSON syntax.
+	* @param [reviver] {Function} If a function, prescribes how the value originally produced by parsing is transformed, before being returned.
+	* @return {Object} the reverted object
+	*/
+	JSON.itsa_parseNoCycle = function (stringifiedObj, replacer) {
+	    return retrocycle(JSON.parse(stringifiedObj, replacer));
+	};
+
+	/**
+	* Inspired by https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
+	*
+	* Restore an object that was reduced by `JSON.itsa_stringifyNoCycle`.
+	* Parses a stringified object and creates true `Date` properties.
+	*
+	* Members whose values are objects of the form
+	*      {$ref: PATH}
+	* are replaced with references to the value found by the PATH. This will restore cycles. The object will be mutated.
+	*
+	* @example
+	*     var s = '[{"$ref":"$"}]';
+	*     itsa_parseNoCycle(s);
+	*
+	* @method itsa_parseNoCycleWithDate
+	* @param value {Any} The string to parse as JSON. See the JSON object for a description of JSON syntax.
+	* @return {Object} the reverted object
+	*/
+	JSON.itsa_parseNoCycleWithDate = function (stringifiedObj) {
+	    return retrocycle(JSON.itsa_parseWithDate(stringifiedObj));
+	};
+
+/***/ }),
+/* 178 */
+/***/ (function(module, exports) {
+
+	/* global Promise:true */
+
+	"use strict";
+
+	/**
+	 * Provides additional Promise-methods. These are extra methods which are not part of the PromiseA+ specification,
+	 * But are all Promise/A+ compatable.
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 *
+	 * @module js-ext
+	 * @submodule lib/promise.s
+	 * @class Promise
+	*/
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var FUNCTION_EXPECTED = " expects an array of function-references",
+	    // include leading space
+	FUNCTION = "function",
+	    PROMISE_CHAIN = "Promise.chain";
+
+	if (Promise) {
+	    (function (PromisePrototype) {
+	        /**
+	         * Promise which can be put at the very end of a chain, even after .catch().
+	         * Will invoke the callback function regardless whether the chain resolves or rejects.
+	         *
+	         * The argument of the callback will be either its fulfilled or rejected argument, but
+	         * it is wisely not to handle it. The results should have been handled in an earlier step
+	         * of the chain: .itsa_finally() basicly means you want to execute code after the chain, regardless
+	         * whether it's resolved or rejected.
+	         *
+	         * **Note:** .itsa_finally() <u>does not return a Promise</u>: it should be used as the very last step of a Promisechain.
+	         * If you need an intermediate method, you should take .itsa_fulfillThen().
+	         *
+	         * @method itsa_finally
+	         * @param finallyback {Function} the callback-function to be invoked.
+	         * @return {Promise}
+	         */
+	        PromisePrototype.itsa_finally = function (finallyback) {
+	            return this.then(finallyback, finallyback);
+	        };
+
+	        /**
+	         * Will always return a fulfilled Promise.
+	         *
+	         * Typical usage will be by making it part of a Promisechain: it makes the chain go
+	         * into its fulfilled phase.
+	         *
+	         * @example
+	         *
+	         * promise1
+	         * .then(promise2)
+	         * .itsa_fulfillThen()
+	         * .then(handleFulfilled, handleRejected) // handleFulfilled always gets invoked
+	         * @method itsa_fulfillThen
+	         * @param [response] {Object} parameter to pass through which overrules the original Promise-response.
+	         * @return {Promise} Resolved Promise. `response` will be passed trough as parameter when set.
+	         *         When not set: in case the original Promise resolved, its parameter is passed through.
+	         *         in case of a rejection, no parameter will be passed through.
+	         */
+	        PromisePrototype.itsa_fulfillThen = function (callback) {
+	            return this.then(function (r) {
+	                return r;
+	            }, function (r) {
+	                return r;
+	            }).then(callback);
+	        };
+	    })(Promise.prototype);
+
+	    /**
+	     * Returns a Promise that always fulfills. It is fulfilled when ALL items are resolved (either fulfilled
+	     * or rejected). This is useful for waiting for the resolution of multiple
+	     * promises, such as reading multiple files in Node.js or making multiple XHR
+	     * requests in the browser. Because -on the contrary of `Promise.all`- **finishAll** waits until
+	     * all single Promises are resolved, you can handle all promises, even if some gets rejected.
+	     *
+	     * @method itsa_finishAll
+	     * @param items {Any[]} an array of any kind of items, promises or not. If a value is not a promise,
+	     * its transformed into a resolved promise.
+	     * @return {Promise} A promise for an array of all the fulfillment items:
+	     * <ul>
+	     *     <li>Fulfilled: o {Object}
+	     *         <ul>
+	     *             <li>fulfilled {Array} all fulfilled responses, any item that was rejected will have a value of `undefined`</li>
+	     *             <li>rejected {Array} all rejected responses, any item that was fulfilled will have a value of `undefined`</li>
+	     *         </ul>
+	     *     </li>
+	     *     <li>Rejected: this promise **never** rejects</li>
+	     * </ul>
+	     * @static
+	     */
+	    Promise.itsa_finishAll = function (items) {
+	        return new Promise(function (fulfill) {
+	            // Array.isArray assumes ES5
+	            Array.isArray(items) || (items = [items]);
+
+	            var remaining = items.length,
+	                length = items.length,
+	                fulfilledresults = [],
+	                rejectedresults = [],
+	                i;
+
+	            function oneDone(index, fulfilled) {
+	                return function (value) {
+	                    fulfilled ? fulfilledresults[index] = value : rejectedresults[index] = value;
+	                    remaining--;
+	                    if (!remaining) {
+	                        fulfill({
+	                            fulfilled: fulfilledresults,
+	                            rejected: rejectedresults
+	                        });
+	                    }
+	                };
+	            }
+
+	            if (length < 1) {
+	                return fulfill({
+	                    fulfilled: fulfilledresults,
+	                    rejected: rejectedresults
+	                });
+	            }
+
+	            fulfilledresults.length = length;
+	            rejectedresults.length = length;
+	            for (i = 0; i < length; i++) {
+	                Promise.resolve(items[i]).then(oneDone(i, true), oneDone(i, false));
+	            }
+	        });
+	    };
+
+	    /**
+	     * Returns a Promise which chains the function-calls. Like an automated Promise-chain.
+	     * Invokes the functionreferences in a chain. You MUST supply function-references, it doesn't
+	     * matter wheter these functions return a Promise or not. Any returnvalues are passed through to
+	     * the next function.
+	     *
+	     * **Cautious:** you need to pass function-references, not invoke them!
+	     * chainFns will invoke them when the time is ready. Regarding to this, there is a difference with
+	     * using Promise.all() where you should pass invoked Promises.
+	     *
+	     * If one of the functions returns a Promise, the chain
+	     * will wait its execution for this function to be resolved.
+	     *
+	     * If you need specific context or arguments: use Function.bind for these items.
+	     * If one of the items returns a rejected Promise, by default: the whole chain rejects
+	     * and following functions in the chain will not be invoked. When `finishAll` is set `true`
+	     * the chain will always continue even with rejected Promises.
+	     *
+	     * Returning functionvalues are passed through the chain adding them as an extra argument
+	     * to the next function in the chain (argument is added on the right)
+	     *
+	     * @example
+	     *     var a = [], p1, p2, p3;
+	     *     p1 = function(a) {
+	     *         return new Promise(function(resolve, reject) {
+	     *             I.later(function() {
+	     *                 console.log('resolving promise p1: '+a);
+	     *                 resolve(a);
+	     *             }, 1000);
+	     *         });
+	     *     };
+	     *     p2 = function(b, r) {
+	     *         var value = b+r;
+	     *         console.log('returning p2: '+value);
+	     *         return value;
+	     *     };
+	     *     p3 = function(c, r) {
+	     *         return new Promise(function(resolve, reject) {
+	     *             I.later(function() {
+	     *                 var value = b+r;
+	     *                 console.log('resolving promise p3: '+value);
+	     *                 resolve(value);
+	     *             }, 1000);
+	     *         });
+	     *     };
+	     *     a.push(p1.bind(undefined, 100));
+	     *     a.push(p2.bind(undefined, 200));
+	     *     a.push(p3.bind(undefined, 300));
+	     *     Promise.itsa_chainFns(a).then(
+	     *         function(r) {
+	     *             console.log('chain resolved with '+r);
+	     *         },
+	     *         function(err) {
+	     *             console.log('chain-error '+err);
+	     *         }
+	     *     );
+	     *
+	     * @method itsa_chainFns
+	     * @param funcs {function[]} an array of function-references
+	     * @param [finishAll=false] {boolean} to force the chain to continue, even if one of the functions
+	     *        returns a rejected Promise
+	     * @return {Promise}
+	     * on success:
+	        * o {Object} returnvalue of the laste item in the Promisechain
+	     * on failure an Error object
+	        * reason {Error}
+	     * @static
+	     */
+	    Promise.itsa_chainFns = function (funcs, finishAll) {
+	        var handleFn,
+	            length,
+	            _handlePromiseChain,
+	            promiseErr,
+	            i = 0;
+	        // Array.isArray assumes ES5
+	        Array.isArray(funcs) || (funcs = [funcs]);
+	        length = funcs.length;
+	        handleFn = function handleFn() {
+	            var nextFn = funcs[i],
+	                promise;
+	            if ((typeof nextFn === "undefined" ? "undefined" : _typeof(nextFn)) !== FUNCTION) {
+	                return Promise.reject(new TypeError(PROMISE_CHAIN + FUNCTION_EXPECTED));
+	            }
+	            promise = Promise.resolve(nextFn.apply(null, arguments));
+	            // by using "promise.catch(function(){})" we return a resolved Promise
+	            return finishAll ? promise.catch(function (err) {
+	                promiseErr = err;
+	                return err;
+	            }) : promise;
+	        };
+	        _handlePromiseChain = function handlePromiseChain() {
+	            // will loop until rejected, which is at destruction of the class
+	            return handleFn.apply(null, arguments).then(++i < length ? _handlePromiseChain : undefined);
+	        };
+	        return _handlePromiseChain().then(function (response) {
+	            // if (promiseErr) {
+	            //     throw new Error(promiseErr);
+	            // }
+	            return promiseErr || response;
+	        });
+	    };
+
+	    /**
+	     * Returns a Promise with 5 additional methods:
+	     *
+	     * promise.fulfill
+	     * promise.reject
+	     * promise.callback
+	     * promise.setCallback
+	     * promise.pending
+	     * promise.stayActive --> force the promise not to resolve in the specified time
+	     *
+	     * With Promise.manage, you get a Promise which is managable from outside, not inside as Promise A+ work.
+	     * You can invoke promise.**callback**() which will invoke the original passed-in callbackFn - if any.
+	     * promise.**fulfill**() and promise.**reject**() are meant to resolve the promise from outside, just like deferred can do.
+	     *
+	     * If `stayActive` is defined, the promise will only be resolved after this specified time (ms). When `fulfill` or `reject` is
+	     * called, it will be applied after this specified time.
+	     *
+	     * @example
+	     *     var promise = Promise.itsa_manage(
+	     *         function(msg) {
+	     *             alert(msg);
+	     *         }
+	     *     );
+	     *
+	     *     promise.then(
+	     *         function() {
+	     *             // promise is fulfilled, no further actions can be taken
+	     *         }
+	     *     );
+	     *
+	     *     setTimeout(function() {
+	     *         promise.callback('hey, I\'m still busy');
+	     *     }, 1000);
+	     *
+	     *     setTimeout(function() {
+	     *         promise.fulfill();
+	     *     }, 2000);
+	     *
+	     * @method itsa_manage
+	     * @param [callbackFn] {Function} invoked everytime promiseinstance.callback() is called.
+	     *        You may as weel (re)set this method atny time lare by using promise.setCallback()
+	     * @param [stayActive=false] {Boolean} specified time to wait before the promise really gets resolved
+	     * @return {Promise} with three handles: fulfill, reject and callback.
+	     * @static
+	     */
+	    Promise.itsa_manage = function (callbackFn, stayActive) {
+	        var fulfillHandler, rejectHandler, promise, finished, stayActivePromise, resolved, isFulfilled, isRejected;
+
+	        promise = new Promise(function (fulfill, reject) {
+	            fulfillHandler = fulfill;
+	            rejectHandler = reject;
+	        });
+
+	        promise.fulfill = function (value) {
+	            if (!resolved) {
+	                resolved = true;
+	                if (stayActivePromise) {
+	                    stayActivePromise.then(function () {
+	                        finished = true;
+	                        fulfillHandler(value);
+	                    });
+	                } else {
+	                    finished = true;
+	                    fulfillHandler(value);
+	                }
+	            }
+	        };
+
+	        promise.reject = function (reason) {
+	            if (!resolved) {
+	                resolved = true;
+	                if (stayActivePromise) {
+	                    stayActivePromise.then(function () {
+	                        finished = true;
+	                        rejectHandler(reason);
+	                    });
+	                } else {
+	                    finished = true;
+	                    rejectHandler(reason);
+	                }
+	            }
+	        };
+
+	        promise.pending = function () {
+	            return !finished;
+	        };
+
+	        promise.isFulfilled = function () {
+	            return !!isFulfilled;
+	        };
+
+	        promise.isRejected = function () {
+	            return !!isRejected;
+	        };
+
+	        promise.stayActive = function (time) {
+	            stayActivePromise = new Promise(function (fulfill) {
+	                setTimeout(fulfill, time);
+	            });
+	        };
+
+	        promise.callback = function () {
+	            if (!finished && callbackFn) {
+	                callbackFn.apply(undefined, arguments);
+	            }
+	        };
+
+	        promise.setCallback = function (newCallbackFn) {
+	            callbackFn = newCallbackFn;
+	        };
+
+	        stayActive && promise.stayActive(stayActive);
+
+	        promise.then(function () {
+	            isFulfilled = true;
+	        }, function () {
+	            isRejected = true;
+	        });
+
+	        return promise;
+	    };
+	}
+
+/***/ }),
+/* 179 */
+/***/ (function(module, exports) {
+
+	/**
+	 *
+	 * Extension of Math
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module js-ext
+	 * @submodule lib/math.js
+	 * @class Math
+	 *
+	 */
+
+	"use strict";
+
+	/**
+	 * Returns the value, while forcing it to be inbetween the specified edges.
+	 *
+	 * @method itsa_inbetween
+	 * @param min {Number} lower-edgde
+	 * @param value {Number} the original value that should be inbetween the edges
+	 * @param max {Number} upper-edgde
+	 * @param [absoluteValue] {boolean} whether `value` should be treaded as an absolute value
+	 * @return {Number|undefined} the value, forced to be inbetween the edges. Returns `undefined` if `max` is lower than `min`.
+	 */
+
+	Math.itsa_inbetween = function (min, value, max, absoluteValue) {
+	  var val = absoluteValue ? Math.abs(value) : value;
+	  return max >= min ? this.min(max, this.max(min, val)) : undefined;
+	};
+
+	/**
+	 * Floors a value in the direction to zero. Native Math.floor does this for positive values,
+	 * but negative values are floored more into the negative (Math.floor(-2.3) === -3).
+	 * This method floores into the direction of zero: (Math.itsa_floorToZero(-2.3) === -2)
+	 *
+	 * @method itsa_floorToZero
+	 * @param value {Number} the original value that should be inbetween the edges
+	 * @return {Number} the floored value
+	 */
+	Math.itsa_floorToZero = function (value) {
+	  return value >= 0 ? Math.floor(value) : Math.ceil(value);
+	};
+
+	/**
+	 * Ceils a value from zero up. Native Math.ceil does this for positive values,
+	 * but negative values are ceiled more into the less negative (Math.ceil(-2.3) === -2).
+	 * This method ceiles up from zero: (Math.itsa_ceilFromZero(-2.3) === -3)
+	 *
+	 * @method itsa_ceilFromZero
+	 * @param value {Number} the original value that should be inbetween the edges
+	 * @return {Number} the floored value
+	 */
+	Math.itsa_ceilFromZero = function (value) {
+	  return value >= 0 ? Math.ceil(value) : Math.floor(value);
+	};
+
+/***/ }),
+/* 180 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var timers = __webpack_require__(181);
+
+	module.exports = {
+	   idGenerator: __webpack_require__(185).idGenerator,
+	   later: timers.later,
+	   async: timers.async,
+	   isNode: __webpack_require__(186)
+	};
+
+/***/ }),
+/* 181 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(setImmediate, process) {/**
+	 * Collection of various utility functions.
+	 *
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module utils
+	 * @class Utils
+	 * @static
+	*/
+
+	"use strict";
+
+	var _asynchronizer, _async;
+
+	/**
+	 * Forces a function to be run asynchronously, but as fast as possible. In Node.js
+	 * this is achieved using `setImmediate` or `process.nextTick`.
+	 *
+	 * @method _asynchronizer
+	 * @param callbackFn {Function} The function to call asynchronously
+	 * @static
+	 * @private
+	**/
+	_asynchronizer = typeof setImmediate !== "undefined" ? function (fn) {
+	  setImmediate(fn);
+	} : typeof process !== "undefined" && process.nextTick ? process.nextTick : function (fn) {
+	  setTimeout(fn, 0);
+	};
+
+	/**
+	 * Invokes the callbackFn once in the next turn of the JavaScript event loop. If the function
+	 * requires a specific execution context or arguments, wrap it with Function.bind.
+	 *
+	 * I.async returns an object with a cancel method.  If the cancel method is
+	 * called before the callback function, the callback function won"t be called.
+	 *
+	 * @method async
+	 * @param {Function} callbackFn
+	 * @param [invokeAfterFn=true] {boolean} set to false to prevent the _afterSyncFn to be invoked
+	 * @return {Object} An object with a cancel method.  If the cancel method is
+	 * called before the callback function, the callback function won"t be called.
+	**/
+	_async = function _async(callbackFn, invokeAfterFn) {
+	  var canceled;
+
+	  invokeAfterFn = typeof invokeAfterFn === "boolean" ? invokeAfterFn : true;
+	  typeof callbackFn === "function" && _asynchronizer(function () {
+	    if (!canceled) {
+	      callbackFn();
+	    }
+	  });
+
+	  return {
+	    cancel: function cancel() {
+	      canceled = true;
+	    }
+	  };
+	};
+
+	/**
+	 * Invokes the callbackFn once in the next turn of the JavaScript event loop. If the function
+	 * requires a specific execution context or arguments, wrap it with Function.bind.
+	 *
+	 * I.async returns an object with a cancel method.  If the cancel method is
+	 * called before the callback function, the callback function won"t be called.
+	 *
+	 * @method async
+	 * @param {Function} callbackFn
+	 * @param [invokeAfterFn=true] {boolean} set to false to prevent the _afterSyncFn to be invoked
+	 * @return {Object} An object with a cancel method.  If the cancel method is
+	 * called before the callback function, the callback function won"t be called.
+	**/
+	module.exports.async = _async;
+
+	/**
+	 * Invokes the callbackFn after a timeout (asynchronous). If the function
+	 * requires a specific execution context or arguments, wrap it with Function.bind.
+	 *
+	 * To invoke the callback function periodic, set "periodic" either "true", or specify a second timeout.
+	 * If number, then periodic is considered "true" but with a perdiod defined by "periodic",
+	 * which means: the first timer executes after "timeout" and next timers after "period".
+	 *
+	 * I.later returns an object with a cancel method.  If the cancel() method is
+	 * called before the callback function, the callback function won"t be called.
+	 *
+	 * @method later
+	 * @param callbackFn {Function} the function to execute.
+	 * @param [timeout] {Number} the number of milliseconds to wait until the callbackFn is executed.
+	 * when not set, the callback function is invoked once in the next turn of the JavaScript event loop.
+	 * @param [periodic] {boolean|Number} if true, executes continuously at supplied, if number, then periodic is considered "true" but with a perdiod
+	 * defined by "periodic", which means: the first timer executes after "timeout" and next timers after "period".
+	 * The interval executes until canceled.
+	 * @return {object} a timer object. Call the cancel() method on this object to stop the timer.
+	*/
+	module.exports.later = function (callbackFn, timeout, periodic) {
+	  var canceled = false;
+	  if (typeof timeout !== "number") {
+	    return _async(callbackFn);
+	  }
+	  var wrapper = function wrapper() {
+	    // nodejs may execute a callback, so in order to preserve
+	    // the cancel() === no more runny-run, we have to build in an extra conditional
+	    if (!canceled) {
+	      callbackFn();
+	      // we are NOT using setInterval, because that leads to problems when the callback
+	      // lasts longer than the interval. Instead, we use the interval as inbetween-phase
+	      // between the separate callbacks.
+	      id = periodic ? setTimeout(wrapper, typeof periodic === "number" ? periodic : timeout) : null;
+	    }
+	  },
+	      id;
+	  typeof callbackFn === "function" && (id = setTimeout(wrapper, timeout));
+
+	  return {
+	    cancel: function cancel() {
+	      canceled = true;
+	      id && clearTimeout(id);
+	      // break closure:
+	      id = null;
+	    }
+	  };
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(182).setImmediate, __webpack_require__(184)))
+
+/***/ }),
+/* 182 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var apply = Function.prototype.apply;
+
+	// DOM APIs, for completeness
+
+	exports.setTimeout = function () {
+	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+	};
+	exports.setInterval = function () {
+	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+	};
+	exports.clearTimeout = exports.clearInterval = function (timeout) {
+	  if (timeout) {
+	    timeout.close();
+	  }
+	};
+
+	function Timeout(id, clearFn) {
+	  this._id = id;
+	  this._clearFn = clearFn;
+	}
+	Timeout.prototype.unref = Timeout.prototype.ref = function () {};
+	Timeout.prototype.close = function () {
+	  this._clearFn.call(window, this._id);
+	};
+
+	// Does not start the time, just sets up the members needed.
+	exports.enroll = function (item, msecs) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = msecs;
+	};
+
+	exports.unenroll = function (item) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = -1;
+	};
+
+	exports._unrefActive = exports.active = function (item) {
+	  clearTimeout(item._idleTimeoutId);
+
+	  var msecs = item._idleTimeout;
+	  if (msecs >= 0) {
+	    item._idleTimeoutId = setTimeout(function onTimeout() {
+	      if (item._onTimeout) item._onTimeout();
+	    }, msecs);
+	  }
+	};
+
+	// setimmediate attaches itself to the global object
+	__webpack_require__(183);
+	exports.setImmediate = setImmediate;
+	exports.clearImmediate = clearImmediate;
+
+/***/ }),
+/* 183 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global, process) {"use strict";
+
+	(function (global, undefined) {
+	    "use strict";
+
+	    if (global.setImmediate) {
+	        return;
+	    }
+
+	    var nextHandle = 1; // Spec says greater than zero
+	    var tasksByHandle = {};
+	    var currentlyRunningATask = false;
+	    var doc = global.document;
+	    var registerImmediate;
+
+	    function setImmediate(callback) {
+	        // Callback can either be a function or a string
+	        if (typeof callback !== "function") {
+	            callback = new Function("" + callback);
+	        }
+	        // Copy function arguments
+	        var args = new Array(arguments.length - 1);
+	        for (var i = 0; i < args.length; i++) {
+	            args[i] = arguments[i + 1];
+	        }
+	        // Store and register the task
+	        var task = { callback: callback, args: args };
+	        tasksByHandle[nextHandle] = task;
+	        registerImmediate(nextHandle);
+	        return nextHandle++;
+	    }
+
+	    function clearImmediate(handle) {
+	        delete tasksByHandle[handle];
+	    }
+
+	    function run(task) {
+	        var callback = task.callback;
+	        var args = task.args;
+	        switch (args.length) {
+	            case 0:
+	                callback();
+	                break;
+	            case 1:
+	                callback(args[0]);
+	                break;
+	            case 2:
+	                callback(args[0], args[1]);
+	                break;
+	            case 3:
+	                callback(args[0], args[1], args[2]);
+	                break;
+	            default:
+	                callback.apply(undefined, args);
+	                break;
+	        }
+	    }
+
+	    function runIfPresent(handle) {
+	        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+	        // So if we're currently running a task, we'll need to delay this invocation.
+	        if (currentlyRunningATask) {
+	            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+	            // "too much recursion" error.
+	            setTimeout(runIfPresent, 0, handle);
+	        } else {
+	            var task = tasksByHandle[handle];
+	            if (task) {
+	                currentlyRunningATask = true;
+	                try {
+	                    run(task);
+	                } finally {
+	                    clearImmediate(handle);
+	                    currentlyRunningATask = false;
+	                }
+	            }
+	        }
+	    }
+
+	    function installNextTickImplementation() {
+	        registerImmediate = function registerImmediate(handle) {
+	            process.nextTick(function () {
+	                runIfPresent(handle);
+	            });
+	        };
+	    }
+
+	    function canUsePostMessage() {
+	        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+	        // where `global.postMessage` means something completely different and can't be used for this purpose.
+	        if (global.postMessage && !global.importScripts) {
+	            var postMessageIsAsynchronous = true;
+	            var oldOnMessage = global.onmessage;
+	            global.onmessage = function () {
+	                postMessageIsAsynchronous = false;
+	            };
+	            global.postMessage("", "*");
+	            global.onmessage = oldOnMessage;
+	            return postMessageIsAsynchronous;
+	        }
+	    }
+
+	    function installPostMessageImplementation() {
+	        // Installs an event handler on `global` for the `message` event: see
+	        // * https://developer.mozilla.org/en/DOM/window.postMessage
+	        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+	        var messagePrefix = "setImmediate$" + Math.random() + "$";
+	        var onGlobalMessage = function onGlobalMessage(event) {
+	            if (event.source === global && typeof event.data === "string" && event.data.indexOf(messagePrefix) === 0) {
+	                runIfPresent(+event.data.slice(messagePrefix.length));
+	            }
+	        };
+
+	        if (global.addEventListener) {
+	            global.addEventListener("message", onGlobalMessage, false);
+	        } else {
+	            global.attachEvent("onmessage", onGlobalMessage);
+	        }
+
+	        registerImmediate = function registerImmediate(handle) {
+	            global.postMessage(messagePrefix + handle, "*");
+	        };
+	    }
+
+	    function installMessageChannelImplementation() {
+	        var channel = new MessageChannel();
+	        channel.port1.onmessage = function (event) {
+	            var handle = event.data;
+	            runIfPresent(handle);
+	        };
+
+	        registerImmediate = function registerImmediate(handle) {
+	            channel.port2.postMessage(handle);
+	        };
+	    }
+
+	    function installReadyStateChangeImplementation() {
+	        var html = doc.documentElement;
+	        registerImmediate = function registerImmediate(handle) {
+	            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+	            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+	            var script = doc.createElement("script");
+	            script.onreadystatechange = function () {
+	                runIfPresent(handle);
+	                script.onreadystatechange = null;
+	                html.removeChild(script);
+	                script = null;
+	            };
+	            html.appendChild(script);
+	        };
+	    }
+
+	    function installSetTimeoutImplementation() {
+	        registerImmediate = function registerImmediate(handle) {
+	            setTimeout(runIfPresent, 0, handle);
+	        };
+	    }
+
+	    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+	    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+	    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+	    // Don't get fooled by e.g. browserify environments.
+	    if ({}.toString.call(global.process) === "[object process]") {
+	        // For Node.js before 0.9
+	        installNextTickImplementation();
+	    } else if (canUsePostMessage()) {
+	        // For non-IE10 modern browsers
+	        installPostMessageImplementation();
+	    } else if (global.MessageChannel) {
+	        // For web workers, where supported
+	        installMessageChannelImplementation();
+	    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+	        // For IE 6–8
+	        installReadyStateChangeImplementation();
+	    } else {
+	        // For older browsers
+	        installSetTimeoutImplementation();
+	    }
+
+	    attachTo.setImmediate = setImmediate;
+	    attachTo.clearImmediate = clearImmediate;
+	})(typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self);
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(184)))
+
+/***/ }),
+/* 184 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	// shim for using process in browser
+	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout() {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	})();
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch (e) {
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch (e) {
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e) {
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e) {
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+	}
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+
+	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = runTimeout(cleanUpNextTick);
+	    draining = true;
+
+	    var len = queue.length;
+	    while (len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    runClearTimeout(timeout);
+	}
+
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        runTimeout(drainQueue);
+	    }
+	};
+
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	process.prependListener = noop;
+	process.prependOnceListener = noop;
+
+	process.listeners = function (name) {
+	    return [];
+	};
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	process.cwd = function () {
+	    return '/';
+	};
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function () {
+	    return 0;
+	};
+
+/***/ }),
+/* 185 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	var UNDEFINED_NS = "__undefined__",
+	    namespaces = {};
+
+	/**
+	 * Collection of various utility functions.
+	 *
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module utils
+	 * @class Utils
+	 * @static
+	*/
+
+	/**
+	 * Generates an unique id with the signature: "namespace-follownr"
+	 *
+	 * @example
+	 *
+	 *     var generator = require("core-utils-idgenerator");
+	 *
+	 *     console.log(generator()); // --> 1
+	 *     console.log(generator()); // --> 2
+	 *     console.log(generator(1000)); // --> 1000
+	 *     console.log(generator()); // --> 1001
+	 *     console.log(generator("Parcel, 500")); // -->"Parcel-500"
+	 *     console.log(generator("Parcel")); // -->"Parcel-501"
+	 *
+	 *
+	 * @method idGenerator
+	 * @param [namespace] {String} namespace to prepend the generated id.
+	 *        When ignored, the generator just returns a number.
+	 * @param [start] {Number} startvalue for the next generated id. Any further generated id"s will preceed this id.
+	 *        If `start` is lower or equal than the last generated id, it will be ignored.
+	 * @return {Number|String} an unique id. Either a number, or a String (digit prepended with "namespace-")
+	 */
+	module.exports.idGenerator = function (namespace, start) {
+	  // in case `start` is set at first argument, transform into (null, start)
+	  typeof namespace === "number" && (start = namespace) && (namespace = null);
+	  namespace || (namespace = UNDEFINED_NS);
+
+	  if (!namespaces[namespace]) {
+	    namespaces[namespace] = start || 1;
+	  } else if (start && namespaces[namespace] < start) {
+	    namespaces[namespace] = start;
+	  }
+	  return namespace === UNDEFINED_NS ? namespaces[namespace]++ : namespace + "-" + namespaces[namespace]++;
+	};
+
+/***/ }),
+/* 186 */
+/***/ (function(module, exports) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Collection of various utility functions.
+	 *
+	 *
+	 * <i>Copyright (c) 2014 ITSA - https://github.com/itsa</i>
+	 * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
+	 *
+	 * @module utils
+	 * @class Utils
+	 * @static
+	*/
+
+	/**
+	 * Checks whether the environment is Nodejs
+	 *
+	 * @method isnode
+	 * @return {Boolean} whether the environment is Nodejs
+	 */
+
+	'use strict';
+
+	var isNode = typeof global !== 'undefined' && {}.toString.call(global) === '[object global]' && (!global.document || {}.toString.call(global.document) !== '[object HTMLDocument]');
+
+	module.exports = isNode;
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ })
 /******/ ]);

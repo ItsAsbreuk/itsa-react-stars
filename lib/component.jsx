@@ -14,40 +14,190 @@
  * @since 15.0.0
 */
 
+require('itsa-jsext');
+
 const React = require("react"),
     PropTypes = React.PropTypes,
+    idGenerator = require('itsa-utils').idGenerator,
     MAIN_CLASS = "itsa-stars",
+    DEF_SIZE = '1em', // equals its height
+    SVG_HEIGHT = 32, // do not change as it matches the svg-items!
     STAR_CLASS = MAIN_CLASS+"-star",
-    STARS = {
-        0: "../css/star-empty.svg", // empty star
-        1: "../css/star-half.svg", // half star
-        2: "../css/star.svg" // full star
+    BASE_STAR_IDS = {
+        0: 'empty-',
+        1: 'half-',
+        2: 'full-'
     };
 
 const Component = React.createClass({
-
     propTypes: {
+        /**
+         * The class for the component.
+         *
+         * @property className
+         * @type String
+         * @since 15.0.0
+        */
         className: PropTypes.string,
+
+        /**
+         * Fill color for an empty star.
+         *
+         * @property emptyColor
+         * @default '#FFF'
+         * @type String
+         * @since 15.0.0
+        */
+        emptyColor: PropTypes.string,
+
+        /**
+         * Fill color for an filled star.
+         *
+         * @property fillColor
+         * @default '#000'
+         * @type String
+         * @since 15.0.0
+        */
+        fillColor: PropTypes.string,
+
+        /**
+         * Whether to accept only full stars instead of half-full stars.
+         * By default, the component supports half full stars.
+         *
+         * @property fullStars
+         * @default false
+         * @type Boolean
+         * @since 15.0.0
+        */
         fullStars: PropTypes.bool,
+
+        /**
+         * Callback for the onClick event.
+         *
+         * @property onClick
+         * @type Function
+         * @since 15.0.0
+        */
         onClick: PropTypes.func,
+
+        /**
+         * Callback for the onMouseEnter event.
+         *
+         * @property onMouseEnter
+         * @type Function
+         * @since 15.0.0
+        */
         onMouseEnter: PropTypes.func,
+
+        /**
+         * Callback for the onMousLeave event.
+         *
+         * @property onMousLeave
+         * @type Function
+         * @since 15.0.0
+        */
         onMousLeave: PropTypes.func,
-        stars: PropTypes.number.isRequired
+
+        /**
+         * The size of the component, specified by its height.
+         *
+         * @property size
+         * @default '1em'
+         * @type String
+         * @since 15.0.0
+        */
+        size: PropTypes.string,
+
+        /**
+         * The space inbetween the stars.
+         *
+         * @property spaced
+         * @default 45
+         * @type Number
+         * @since 15.0.0
+        */
+        spaced: PropTypes.number,
+
+        /**
+         * The number of stars to be filled. Should be a number between 0 and 5.
+         * Filling is done based upon half, or full stars: depending on this.props.fullStars.
+         *
+         * @property stars
+         * @type Number
+         * @required
+         * @since 15.0.0
+        */
+        stars: PropTypes.number.isRequired,
+
+        /**
+         * The stroke color of the stars.
+         *
+         * @property strokeColor
+         * @type String
+         * @default '#000'
+         * @since 15.0.0
+        */
+        strokeColor: PropTypes.string,
+
+        /**
+         * The stroke width of the stars.
+         *
+         * @property strokeWidth
+         * @type Number
+         * @default 3
+         * @since 15.0.0
+        */
+        strokeWidth: PropTypes.number
     },
 
-    getInitialProps() {
+    /**
+     * componentWillMount initializes this.starIds
+     *
+     * @method componentWillMount
+     * @since 15.0.0
+     */
+    componentWillMount() {
+        const prepend = idGenerator('itsa-react-star');
+        this.starIds = BASE_STAR_IDS.itsa_map(value => value+prepend);
+    },
+
+    /**
+     * Returns the default this.props
+     *
+     * @method getDefaultProps
+     * @since 15.0.0
+     */
+    getDefaultProps() {
         return {
-            fullStars: false
+            emptyColor: '#FFF',
+            fillColor: '#000',
+            fullStars: false,
+            size: DEF_SIZE,
+            spaced: 45,
+            strokeColor: '#000',
+            strokeWidth: 3
         };
     },
 
+    /**
+     * Builds 5 stars, among which some of them are filled.
+     *
+     * @method buildStars
+     * @param numberOfStars {Number} the number of stars to be filled.
+     * @since 15.0.0
+     */
     buildStars(numberOfStars) {
-        let stars = [],
-            props = this.props,
+        let instance = this,
+            stars = [],
+            props = instance.props,
+            strokeWidth = props.strokeWidth,
+            spaced = props.spaced,
             onClick = props.onClick,
-            i, fillLevel, onClickFn;
-        console.warn(numberOfStars);
-        for (i=1; i<6; i++) {
+            starIds = instance.starIds,
+            s;
+        const generateStar = i => {
+            const translateX = (i-1)*spaced+strokeWidth;
+            let onClickFn, fillLevel, transform;
             if (onClick) {
                 onClickFn = onClick.bind(null, i);
             }
@@ -60,9 +210,21 @@ const Component = React.createClass({
             else {
                 fillLevel = 2;
             }
+            // StarComponent = STARS[fillLevel];
+            transform = 'translate('+translateX+' '+strokeWidth+')';
             stars.push(
-                (<img className={STAR_CLASS} key={i} onClick={onClickFn} src={STARS[fillLevel]} />)
+                (<use
+                    color={props.color}
+                    index={i-1}
+                    key={i}
+                    onClick={onClickFn}
+                    transform={transform}
+                    xlinkHref={'#'+starIds[fillLevel]} />)
             );
+        };
+
+        for (s=1; s<6; s++) {
+            generateStar(s);
         }
 
         return stars;
@@ -78,7 +240,15 @@ const Component = React.createClass({
     render() {
         const instance = this,
             props = instance.props,
-            propsClass = props.className;
+            emptyColor = props.emptyColor,
+            fillColor = props.fillColor,
+            fullStars = props.fullStars,
+            strokeColor = props.strokeColor,
+            strokeWidth = props.strokeWidth,
+            propsClass = props.className,
+            svgHeight = SVG_HEIGHT+(2*strokeWidth),
+            svgWidth = (5*svgHeight) + (4*props.spaced),
+            starIds = instance.starIds;
         let numberOfStars = props.stars,
             classname = MAIN_CLASS;
 
@@ -93,10 +263,40 @@ const Component = React.createClass({
         numberOfStars = Math.min(Math.max(0, numberOfStars), 5);
 
         return (
-            <div className={classname}
-                 onMouseEnter={props.onMouseEnter}
-                 onMousLeave={props.onMousLeave}>
-                {instance.buildStars(numberOfStars)}
+            <div
+                className={classname}
+                onMouseEnter={props.onMouseEnter}
+                onMousLeave={props.onMousLeave}
+                style={{height: props.size}} >
+                <svg
+                    viewBox={'0 0 '+svgWidth+' '+svgHeight}
+                    xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <polygon
+                            id={starIds['0']}
+                            fill={emptyColor}
+                            points="32,12.118 20.389,10.918 16.026,0.6 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867"
+                            stroke={strokeColor}
+                            strokeWidth={strokeWidth} />
+                        <g id={starIds['1']}>
+                            <polygon
+                                fill={emptyColor}
+                                points="32,12.118 20.389,10.918 16.026,0.6 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867"
+                                stroke={strokeColor}
+                                strokeWidth={strokeWidth} />
+                            <polygon
+                                fill={fillColor}
+                                points="11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16,0.66" />
+                        </g>
+                        <polygon
+                            id={starIds['2']}
+                            fill={fillColor}
+                            points="32,12.118 20.389,10.918 16.026,0.6 16,0.66 11.547,10.918 0,12.118 8.822,19.867 6.127,31.4 16,25.325 16,0.66 16,25.325 16.021,25.312 25.914,31.4 23.266,19.867"
+                            stroke={strokeColor}
+                            strokeWidth={strokeWidth} />
+                    </defs>
+                    {instance.buildStars(numberOfStars)}
+                </svg>
             </div>
         );
     }
