@@ -237,7 +237,7 @@ describe("Button tests", function () {
                 stars={1} />
             );
             const buttonNode = ReactDOM.findDOMNode(stars);
-            TestUtils.SimulateNative.mouseOver(buttonNode);
+            TestUtils.Simulate.mouseEnter(buttonNode);
             expect(handled).to.be.true;
         });
 
@@ -251,7 +251,7 @@ describe("Button tests", function () {
                 stars={1} />
             );
             const buttonNode = ReactDOM.findDOMNode(stars);
-            TestUtils.SimulateNative.mouseOut(buttonNode);
+            TestUtils.Simulate.mouseLeave(buttonNode);
             expect(handled).to.be.true;
         });
 
@@ -299,19 +299,18 @@ describe("Button tests", function () {
             const buttonNode = ReactDOM.findDOMNode(stars);
             const starNodes = buttonNode.querySelectorAll('use');
             expect(starNodes.length).to.be.eql(5);
-            // see http://stackoverflow.com/questions/24140773/could-not-simulate-mouseenter-event-using-react-test-utils
-            TestUtils.SimulateNative.mouseOver(starNodes[0]);
+            TestUtils.Simulate.mouseEnter(starNodes[0]);
             expect(starValue).to.be.eql(1);
-            TestUtils.SimulateNative.mouseOver(starNodes[1]);
+            TestUtils.Simulate.mouseEnter(starNodes[1]);
             expect(starValue).to.be.eql(2);
-            TestUtils.SimulateNative.mouseOver(starNodes[2]);
+            TestUtils.Simulate.mouseEnter(starNodes[2]);
             expect(starValue).to.be.eql(3);
-            TestUtils.SimulateNative.mouseOver(starNodes[3]);
+            TestUtils.Simulate.mouseEnter(starNodes[3]);
             expect(starValue).to.be.eql(4);
-            TestUtils.SimulateNative.mouseOver(starNodes[4]);
+            TestUtils.Simulate.mouseEnter(starNodes[4]);
             expect(starValue).to.be.eql(5);
             // check lower value:
-            TestUtils.SimulateNative.mouseOver(starNodes[2]);
+            TestUtils.Simulate.mouseEnter(starNodes[2]);
             expect(starValue).to.be.eql(3);
         });
 
@@ -327,19 +326,18 @@ describe("Button tests", function () {
             const buttonNode = ReactDOM.findDOMNode(stars);
             const starNodes = buttonNode.querySelectorAll('use');
             expect(starNodes.length).to.be.eql(5);
-            // see http://stackoverflow.com/questions/24140773/could-not-simulate-mouseenter-event-using-react-test-utils
-            TestUtils.SimulateNative.mouseOut(starNodes[0]);
+            TestUtils.Simulate.mouseLeave(starNodes[0]);
             expect(starValue).to.be.eql(1);
-            TestUtils.SimulateNative.mouseOut(starNodes[1]);
+            TestUtils.Simulate.mouseLeave(starNodes[1]);
             expect(starValue).to.be.eql(2);
-            TestUtils.SimulateNative.mouseOut(starNodes[2]);
+            TestUtils.Simulate.mouseLeave(starNodes[2]);
             expect(starValue).to.be.eql(3);
-            TestUtils.SimulateNative.mouseOut(starNodes[3]);
+            TestUtils.Simulate.mouseLeave(starNodes[3]);
             expect(starValue).to.be.eql(4);
-            TestUtils.SimulateNative.mouseOut(starNodes[4]);
+            TestUtils.Simulate.mouseLeave(starNodes[4]);
             expect(starValue).to.be.eql(5);
             // check lower value:
-            TestUtils.SimulateNative.mouseOut(starNodes[2]);
+            TestUtils.Simulate.mouseLeave(starNodes[2]);
             expect(starValue).to.be.eql(3);
         });
 
