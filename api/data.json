@@ -103,7 +103,7 @@
         {
             "file": "lib/component.jsx",
             "line": 74,
-            "description": "Callback for the onClick event.",
+            "description": "Callback for the onClick event.\nCallback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.",
             "itemtype": "property",
             "name": "onClick",
             "type": "Function",
@@ -113,8 +113,19 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 83,
-            "description": "Callback for the onMouseEnter event.",
+            "line": 84,
+            "description": "Callback for the onClick event on the container.",
+            "itemtype": "property",
+            "name": "onClickContainer",
+            "type": "Function",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 93,
+            "description": "Callback for the onMouseEnter event.\nCallback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.",
             "itemtype": "property",
             "name": "onMouseEnter",
             "type": "Function",
@@ -124,8 +135,19 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 92,
-            "description": "Callback for the onMouseLeave event.",
+            "line": 103,
+            "description": "Callback for the onMouseEnter event on the container.",
+            "itemtype": "property",
+            "name": "onMouseEnterContainer",
+            "type": "Function",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 112,
+            "description": "Callback for the onMouseLeave event on a star.\nCallback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.",
             "itemtype": "property",
             "name": "onMouseLeave",
             "type": "Function",
@@ -135,7 +157,18 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 101,
+            "line": 122,
+            "description": "Callback for the onMouseLeave event on the container.",
+            "itemtype": "property",
+            "name": "onMouseLeaveContainer",
+            "type": "Function",
+            "since": "15.0.0",
+            "class": "Component",
+            "module": "component.jsx"
+        },
+        {
+            "file": "lib/component.jsx",
+            "line": 131,
             "description": "The size of the component, specified by its height.",
             "itemtype": "property",
             "name": "size",
@@ -147,7 +180,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 111,
+            "line": 141,
             "description": "The space inbetween the stars.",
             "itemtype": "property",
             "name": "spaced",
@@ -159,7 +192,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 121,
+            "line": 151,
             "description": "The number of stars to be filled. Should be a number between 0 and 5.\nFilling is done based upon half, or full stars: depending on this.props.fullStars.",
             "itemtype": "property",
             "name": "stars",
@@ -171,7 +204,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 132,
+            "line": 162,
             "description": "The stroke color of the stars.",
             "itemtype": "property",
             "name": "strokeColor",
@@ -183,7 +216,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 142,
+            "line": 172,
             "description": "The stroke width of the stars.",
             "itemtype": "property",
             "name": "strokeWidth",
@@ -195,7 +228,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 153,
+            "line": 183,
             "description": "componentWillMount initializes this.starIds",
             "itemtype": "method",
             "name": "componentWillMount",
@@ -205,7 +238,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 164,
+            "line": 194,
             "description": "Returns the default this.props",
             "itemtype": "method",
             "name": "getDefaultProps",
@@ -215,7 +248,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 182,
+            "line": 212,
             "description": "Builds 5 stars, among which some of them are filled.",
             "itemtype": "method",
             "name": "buildStars",
@@ -232,7 +265,7 @@
         },
         {
             "file": "lib/component.jsx",
-            "line": 232,
+            "line": 272,
             "description": "React render-method --> renderes the Component.",
             "itemtype": "method",
             "name": "render",

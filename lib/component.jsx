@@ -73,6 +73,7 @@ const Component = React.createClass({
 
         /**
          * Callback for the onClick event.
+         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
          *
          * @property onClick
          * @type Function
@@ -81,7 +82,17 @@ const Component = React.createClass({
         onClick: PropTypes.func,
 
         /**
+         * Callback for the onClick event on the container.
+         *
+         * @property onClickContainer
+         * @type Function
+         * @since 15.0.0
+        */
+        onClickContainer: PropTypes.func,
+
+        /**
          * Callback for the onMouseEnter event.
+         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
          *
          * @property onMouseEnter
          * @type Function
@@ -90,13 +101,32 @@ const Component = React.createClass({
         onMouseEnter: PropTypes.func,
 
         /**
-         * Callback for the onMouseLeave event.
+         * Callback for the onMouseEnter event on the container.
+         *
+         * @property onMouseEnterContainer
+         * @type Function
+         * @since 15.0.0
+        */
+        onMouseEnterContainer: PropTypes.func,
+
+        /**
+         * Callback for the onMouseLeave event on a star.
+         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
          *
          * @property onMouseLeave
          * @type Function
          * @since 15.0.0
         */
         onMouseLeave: PropTypes.func,
+
+        /**
+         * Callback for the onMouseLeave event on the container.
+         *
+         * @property onMouseLeaveContainer
+         * @type Function
+         * @since 15.0.0
+        */
+        onMouseLeaveContainer: PropTypes.func,
 
         /**
          * The size of the component, specified by its height.
@@ -193,13 +223,21 @@ const Component = React.createClass({
             strokeWidth = props.strokeWidth,
             spaced = props.spaced,
             onClick = props.onClick,
+            onMouseEnter = props.onMouseEnter,
+            onMouseLeave = props.onMouseLeave,
             starIds = instance.starIds,
             s;
         const generateStar = i => {
             const translateX = (i-1)*spaced+strokeWidth;
-            let onClickFn, fillLevel, transform;
+            let onClickFn, onMouseEnterFn, onMouseLeaveFn, fillLevel, transform;
             if (onClick) {
                 onClickFn = onClick.bind(null, i);
+            }
+            if (onMouseEnter) {
+                onMouseEnterFn = onMouseEnter.bind(null, i);
+            }
+            if (onMouseLeave) {
+                onMouseLeaveFn = onMouseLeave.bind(null, i);
             }
             if (numberOfStars<(i-0.6)) {
                 fillLevel = 0;
@@ -217,6 +255,8 @@ const Component = React.createClass({
                     color={props.color}
                     key={i}
                     onClick={onClickFn}
+                    onMouseEnter={onMouseEnterFn}
+                    onMouseLeave={onMouseLeaveFn}
                     transform={transform}
                     xlinkHref={'#'+starIds[fillLevel]} />)
             );
@@ -264,8 +304,9 @@ const Component = React.createClass({
         return (
             <div
                 className={classname}
-                onMouseEnter={props.onMouseEnter}
-                onMouseLeave={props.onMouseLeave}
+                onClick={props.onClickContainer}
+                onMouseEnter={props.onMouseEnterContainer}
+                onMouseLeave={props.onMouseLeaveContainer}
                 style={{height: props.size}} >
                 <svg
                     viewBox={'0 0 '+svgWidth+' '+svgHeight}

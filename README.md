@@ -16,7 +16,7 @@ let props = {
     fillColor: '#ffa500',
     fullStars: true,
     size: '5em',
-    stars: 3.5,
+    stars: 3.5, // <-- the most important property: it sets the number of filled stars
     strokeWidth: 3,
     onClick: starNr => {
         if (starNr===1) {

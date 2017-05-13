@@ -21915,7 +21915,7 @@
 
 
 	// module
-	exports.push([module.id, ".itsa-stars {\n  display: inline-block;\n  /*font-size: 1em;*/\n  -webkit-user-select: none;\n  -khtml-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none; }\n  .itsa-stars > svg {\n    width: auto;\n    height: 100%; }\n", ""]);
+	exports.push([module.id, ".itsa-stars {\n  display: inline-block;\n  -webkit-user-select: none;\n  -khtml-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none; }\n  .itsa-stars > svg {\n    width: auto;\n    height: 100%; }\n", ""]);
 
 	// exports
 
@@ -22310,6 +22310,7 @@
 
 	        /**
 	         * Callback for the onClick event.
+	         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
 	         *
 	         * @property onClick
 	         * @type Function
@@ -22318,7 +22319,17 @@
 	        onClick: PropTypes.func,
 
 	        /**
+	         * Callback for the onClick event on the container.
+	         *
+	         * @property onClickContainer
+	         * @type Function
+	         * @since 15.0.0
+	        */
+	        onClickContainer: PropTypes.func,
+
+	        /**
 	         * Callback for the onMouseEnter event.
+	         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
 	         *
 	         * @property onMouseEnter
 	         * @type Function
@@ -22327,13 +22338,32 @@
 	        onMouseEnter: PropTypes.func,
 
 	        /**
-	         * Callback for the onMouseLeave event.
+	         * Callback for the onMouseEnter event on the container.
+	         *
+	         * @property onMouseEnterContainer
+	         * @type Function
+	         * @since 15.0.0
+	        */
+	        onMouseEnterContainer: PropTypes.func,
+
+	        /**
+	         * Callback for the onMouseLeave event on a star.
+	         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
 	         *
 	         * @property onMouseLeave
 	         * @type Function
 	         * @since 15.0.0
 	        */
 	        onMouseLeave: PropTypes.func,
+
+	        /**
+	         * Callback for the onMouseLeave event on the container.
+	         *
+	         * @property onMouseLeaveContainer
+	         * @type Function
+	         * @since 15.0.0
+	        */
+	        onMouseLeaveContainer: PropTypes.func,
 
 	        /**
 	         * The size of the component, specified by its height.
@@ -22434,15 +22464,25 @@
 	            strokeWidth = props.strokeWidth,
 	            spaced = props.spaced,
 	            onClick = props.onClick,
+	            onMouseEnter = props.onMouseEnter,
+	            onMouseLeave = props.onMouseLeave,
 	            starIds = instance.starIds,
 	            s = void 0;
 	        var generateStar = function generateStar(i) {
 	            var translateX = (i - 1) * spaced + strokeWidth;
 	            var onClickFn = void 0,
+	                onMouseEnterFn = void 0,
+	                onMouseLeaveFn = void 0,
 	                fillLevel = void 0,
 	                transform = void 0;
 	            if (onClick) {
 	                onClickFn = onClick.bind(null, i);
+	            }
+	            if (onMouseEnter) {
+	                onMouseEnterFn = onMouseEnter.bind(null, i);
+	            }
+	            if (onMouseLeave) {
+	                onMouseLeaveFn = onMouseLeave.bind(null, i);
 	            }
 	            if (numberOfStars < i - 0.6) {
 	                fillLevel = 0;
@@ -22457,6 +22497,8 @@
 	                color: props.color,
 	                key: i,
 	                onClick: onClickFn,
+	                onMouseEnter: onMouseEnterFn,
+	                onMouseLeave: onMouseLeaveFn,
 	                transform: transform,
 	                xlinkHref: '#' + starIds[fillLevel] }));
 	        };
@@ -22504,8 +22546,9 @@
 	            "div",
 	            {
 	                className: classname,
-	                onMouseEnter: props.onMouseEnter,
-	                onMouseLeave: props.onMouseLeave,
+	                onClick: props.onClickContainer,
+	                onMouseEnter: props.onMouseEnterContainer,
+	                onMouseLeave: props.onMouseLeaveContainer,
 	                style: { height: props.size } },
 	            React.createElement(
 	                "svg",
