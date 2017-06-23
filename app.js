@@ -21,7 +21,7 @@ let props2 = {
     stars: 3.5,
     onClick: starNr => {
         if (starNr===1) {
-            props2.stars = (props2.stars===1) ? 0 : Math.min(1, props.stars+0.5);
+            props2.stars = (props2.stars===1) ? 0 : Math.min(1, props2.stars+0.5);
         }
         else {
             props2.stars = (props2.stars===starNr) ? starNr-0.5 : starNr;

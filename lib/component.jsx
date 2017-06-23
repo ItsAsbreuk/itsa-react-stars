@@ -29,156 +29,12 @@ const React = require("react"),
         2: 'full-'
     };
 
-const Component = React.createClass({
-    propTypes: {
-        /**
-         * The class for the component.
-         *
-         * @property className
-         * @type String
-         * @since 15.0.0
-        */
-        className: PropTypes.string,
-
-        /**
-         * Fill color for an empty star.
-         *
-         * @property emptyColor
-         * @default '#FFF'
-         * @type String
-         * @since 15.0.0
-        */
-        emptyColor: PropTypes.string,
-
-        /**
-         * Fill color for an filled star.
-         *
-         * @property fillColor
-         * @default '#000'
-         * @type String
-         * @since 15.0.0
-        */
-        fillColor: PropTypes.string,
-
-        /**
-         * Whether to accept only full stars instead of half-full stars.
-         * By default, the component supports half full stars.
-         *
-         * @property fullStars
-         * @default false
-         * @type Boolean
-         * @since 15.0.0
-        */
-        fullStars: PropTypes.bool,
-
-        /**
-         * Callback for the onClick event.
-         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
-         *
-         * @property onClick
-         * @type Function
-         * @since 15.0.0
-        */
-        onClick: PropTypes.func,
-
-        /**
-         * Callback for the onClick event on the container.
-         *
-         * @property onClickContainer
-         * @type Function
-         * @since 15.0.0
-        */
-        onClickContainer: PropTypes.func,
-
-        /**
-         * Callback for the onMouseEnter event.
-         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
-         *
-         * @property onMouseEnter
-         * @type Function
-         * @since 15.0.0
-        */
-        onMouseEnter: PropTypes.func,
-
-        /**
-         * Callback for the onMouseEnter event on the container.
-         *
-         * @property onMouseEnterContainer
-         * @type Function
-         * @since 15.0.0
-        */
-        onMouseEnterContainer: PropTypes.func,
-
-        /**
-         * Callback for the onMouseLeave event on a star.
-         * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
-         *
-         * @property onMouseLeave
-         * @type Function
-         * @since 15.0.0
-        */
-        onMouseLeave: PropTypes.func,
-
-        /**
-         * Callback for the onMouseLeave event on the container.
-         *
-         * @property onMouseLeaveContainer
-         * @type Function
-         * @since 15.0.0
-        */
-        onMouseLeaveContainer: PropTypes.func,
-
-        /**
-         * The size of the component, specified by its height.
-         *
-         * @property size
-         * @default '1em'
-         * @type String
-         * @since 15.0.0
-        */
-        size: PropTypes.string,
-
-        /**
-         * The space inbetween the stars.
-         *
-         * @property spaced
-         * @default 45
-         * @type Number
-         * @since 15.0.0
-        */
-        spaced: PropTypes.number,
-
-        /**
-         * The number of stars to be filled. Should be a number between 0 and 5.
-         * Filling is done based upon half, or full stars: depending on this.props.fullStars.
-         *
-         * @property stars
-         * @type Number
-         * @required
-         * @since 15.0.0
-        */
-        stars: PropTypes.number.isRequired,
-
-        /**
-         * The stroke color of the stars.
-         *
-         * @property strokeColor
-         * @type String
-         * @default '#000'
-         * @since 15.0.0
-        */
-        strokeColor: PropTypes.string,
-
-        /**
-         * The stroke width of the stars.
-         *
-         * @property strokeWidth
-         * @type Number
-         * @default 0
-         * @since 15.0.0
-        */
-        strokeWidth: PropTypes.number
-    },
+class Component extends React.Component {
+    constructor(props) {
+        super(props);
+        const instance = this;
+        instance.buildStars = instance.buildStars.bind(instance);
+    }
 
     /**
      * componentWillMount initializes this.starIds
@@ -189,25 +45,7 @@ const Component = React.createClass({
     componentWillMount() {
         const prepend = idGenerator('itsa-react-star');
         this.starIds = BASE_STAR_IDS.itsa_map(value => value+prepend);
-    },
-
-    /**
-     * Returns the default this.props
-     *
-     * @method getDefaultProps
-     * @since 15.0.0
-     */
-    getDefaultProps() {
-        return {
-            emptyColor: '#FFF',
-            fillColor: '#000',
-            fullStars: false,
-            size: DEF_SIZE,
-            spaced: 45,
-            strokeColor: '#000',
-            strokeWidth: 0
-        };
-    },
+    }
 
     /**
      * Builds 5 stars, among which some of them are filled.
@@ -267,7 +105,7 @@ const Component = React.createClass({
         }
 
         return stars;
-    },
+    }
 
     /**
      * React render-method --> renderes the Component.
@@ -346,6 +184,166 @@ const Component = React.createClass({
         );
     }
 
-});
+}
+
+Component.propTypes = {
+    /**
+     * The class for the component.
+     *
+     * @property className
+     * @type String
+     * @since 15.0.0
+    */
+    className: PropTypes.string,
+
+    /**
+     * Fill color for an empty star.
+     *
+     * @property emptyColor
+     * @default '#FFF'
+     * @type String
+     * @since 15.0.0
+    */
+    emptyColor: PropTypes.string,
+
+    /**
+     * Fill color for an filled star.
+     *
+     * @property fillColor
+     * @default '#000'
+     * @type String
+     * @since 15.0.0
+    */
+    fillColor: PropTypes.string,
+
+    /**
+     * Whether to accept only full stars instead of half-full stars.
+     * By default, the component supports half full stars.
+     *
+     * @property fullStars
+     * @default false
+     * @type Boolean
+     * @since 15.0.0
+    */
+    fullStars: PropTypes.bool,
+
+    /**
+     * Callback for the onClick event.
+     * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
+     *
+     * @property onClick
+     * @type Function
+     * @since 15.0.0
+    */
+    onClick: PropTypes.func,
+
+    /**
+     * Callback for the onClick event on the container.
+     *
+     * @property onClickContainer
+     * @type Function
+     * @since 15.0.0
+    */
+    onClickContainer: PropTypes.func,
+
+    /**
+     * Callback for the onMouseEnter event.
+     * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
+     *
+     * @property onMouseEnter
+     * @type Function
+     * @since 15.0.0
+    */
+    onMouseEnter: PropTypes.func,
+
+    /**
+     * Callback for the onMouseEnter event on the container.
+     *
+     * @property onMouseEnterContainer
+     * @type Function
+     * @since 15.0.0
+    */
+    onMouseEnterContainer: PropTypes.func,
+
+    /**
+     * Callback for the onMouseLeave event on a star.
+     * Callback has arguments: (nr, e) where `nr` is the star-nr, starting with 1.
+     *
+     * @property onMouseLeave
+     * @type Function
+     * @since 15.0.0
+    */
+    onMouseLeave: PropTypes.func,
+
+    /**
+     * Callback for the onMouseLeave event on the container.
+     *
+     * @property onMouseLeaveContainer
+     * @type Function
+     * @since 15.0.0
+    */
+    onMouseLeaveContainer: PropTypes.func,
+
+    /**
+     * The size of the component, specified by its height.
+     *
+     * @property size
+     * @default '1em'
+     * @type String
+     * @since 15.0.0
+    */
+    size: PropTypes.string,
+
+    /**
+     * The space inbetween the stars.
+     *
+     * @property spaced
+     * @default 45
+     * @type Number
+     * @since 15.0.0
+    */
+    spaced: PropTypes.number,
+
+    /**
+     * The number of stars to be filled. Should be a number between 0 and 5.
+     * Filling is done based upon half, or full stars: depending on this.props.fullStars.
+     *
+     * @property stars
+     * @type Number
+     * @required
+     * @since 15.0.0
+    */
+    stars: PropTypes.number.isRequired,
+
+    /**
+     * The stroke color of the stars.
+     *
+     * @property strokeColor
+     * @type String
+     * @default '#000'
+     * @since 15.0.0
+    */
+    strokeColor: PropTypes.string,
+
+    /**
+     * The stroke width of the stars.
+     *
+     * @property strokeWidth
+     * @type Number
+     * @default 0
+     * @since 15.0.0
+    */
+    strokeWidth: PropTypes.number
+};
+
+Component.defaultProps = {
+    emptyColor: '#FFF',
+    fillColor: '#000',
+    fullStars: false,
+    size: DEF_SIZE,
+    spaced: 45,
+    strokeColor: '#000',
+    strokeWidth: 0
+};
 
 module.exports = Component;
