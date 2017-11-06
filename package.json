@@ -1,6 +1,6 @@
 {
   "name": "itsa-react-stars",
-  "version": "16.0.0",
+  "version": "16.0.3",
   "description": "Lightweight svg Star ranking for react",
   "author": [
     {
@@ -37,8 +37,7 @@
     "prop-types": "^15.5.10"
   },
   "peerDependencies": {
-    "react": ">=15",
-    "react-dom": ">=15"
+    "react": ">=15"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",
